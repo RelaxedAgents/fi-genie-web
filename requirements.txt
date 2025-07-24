@@ -2,5 +2,19 @@
 pip
 autopep8
 
-# App
-flask
+# FastAPI Application
+fastapi
+uvicorn[standard]
+
+# Google Cloud and AI
+google-cloud-aiplatform
+
+# LangGraph and LangChain
+langgraph
+langchain-google-vertexai
+langchain-core
+langchain
+
+# Additional dependencies
+requests
+pydantic
