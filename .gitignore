@@ -107,9 +107,14 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Google Cloud credentials
-*.json
+# Google Cloud credentials (keep specific patterns)
 service-account*.json
+*-credentials.json
+*-key.json
+google-cloud-*.json
+
+# But allow configuration files
+!config/vertex_ai_config.json
 
 # Temporary files
 *.tmp
