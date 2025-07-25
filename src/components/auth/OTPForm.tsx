@@ -47,7 +47,7 @@ export const OTPForm: React.FC = () => {
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     // Since it's a dummy OTP, any 6-digit code works
-    router.push("/dashboard")
+    router.push("/auth/profile")
   }
 
   const handleResend = () => {

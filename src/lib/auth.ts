@@ -4,6 +4,8 @@ interface UserData {
   user: {
     id: string;
     phone: string;
+    username?: string;
+    avatar?: string;
     isAuthenticated: boolean;
     metadata: {
       lastLogin: string;
@@ -91,4 +93,14 @@ export const isAuthenticated = (): boolean => {
 export const getCurrentUser = () => {
   const userData = getStoredUser();
   return userData?.user || null;
+};
+
+// Update user profile (username and avatar)
+export const updateUserProfile = (username: string, avatar: string): void => {
+  const userData = getStoredUser();
+  if (userData) {
+    userData.user.username = username;
+    userData.user.avatar = avatar;
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userData));
+  }
 };
