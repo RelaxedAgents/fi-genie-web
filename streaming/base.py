@@ -2,6 +2,7 @@
 
 import asyncio
 from typing import Dict, Any, List, Optional, AsyncIterator
+from datetime import datetime
 from langchain_core.messages import HumanMessage
 
 from .callbacks import StreamingCallbackHandler, StreamingEventIterator
@@ -32,29 +33,15 @@ class StreamingMixin:
         if not hasattr(self, 'tools'):
             raise AttributeError(f"{self.__class__.__name__} must have a 'tools' attribute")
         
-        # Create streaming-enabled model
-        if hasattr(self.model, 'streaming'):
-            # Get model attributes, filtering out private and None values
-            model_attrs = {k: v for k, v in self.model.__dict__.items() 
-                          if not k.startswith('_') and v is not None}
-            model_attrs['streaming'] = True
-            
-            # Handle special case for ChatVertexAI
-            if 'system_instruction' in model_attrs and hasattr(self.model, 'model_kwargs'):
-                # Move system_instruction to model_kwargs
-                if not model_attrs.get('model_kwargs'):
-                    model_attrs['model_kwargs'] = {}
-                model_attrs['model_kwargs']['system_instruction'] = model_attrs.pop('system_instruction')
-            
-            self._streaming_model = self.model.__class__(**model_attrs)
-        else:
-            # Fallback for models that might not support streaming attribute
-            self._streaming_model = self.model
+        # Use the existing model directly - don't recreate it
+        # The model from GeminiService already has streaming capabilities
+        self._streaming_model = self.model
         
         # Import here to avoid circular imports
         from langgraph.prebuilt import create_react_agent
         
-        # Create streaming agent
+        # Create streaming agent using the existing model
+        # This is the same pattern that works in FiMcpAgent
         self._streaming_agent = create_react_agent(
             model=self._streaming_model,
             tools=self.tools if hasattr(self, 'tools') else []
@@ -179,16 +166,16 @@ class StreamingMixin:
     
     async def aquery_stream_events(self, user_input: str, **kwargs) -> AsyncIterator[Dict[str, Any]]:
         """
-        Alternative streaming method using LangGraph's native astream_events.
+        Alternative streaming method using a simpler approach.
         
-        This provides more detailed event information directly from LangGraph.
+        This provides event information without relying on LangGraph's astream_events.
         
         Args:
             user_input: The user's question or request
             **kwargs: Additional arguments
             
         Yields:
-            Dict events from LangGraph's astream_events
+            Dict events representing the processing stages
         """
         # Lazy initialization
         if self._streaming_agent is None:
@@ -200,15 +187,125 @@ class StreamingMixin:
             # Prepare input
             messages = self._prepare_messages(user_input, **kwargs)
             
-            # Stream events using LangGraph's native streaming
-            async for event in self._streaming_agent.astream_events(
-                {"messages": messages},
-                version="v1"
-            ):
-                # Transform LangGraph events to our format
-                formatted_event = self._transform_langgraph_event(event)
-                if formatted_event:
-                    yield formatted_event.to_dict()
+            # Emit progress events based on our configuration
+            config = self._streaming_config or StreamingConfig()
+            
+            if config.enable_progress_tracking and config.progress_stages:
+                for stage, message in config.progress_stages.items():
+                    yield {
+                        "type": "node_start",
+                        "timestamp": datetime.now().isoformat(),
+                        "content": f"Starting {message}",
+                        "metadata": {
+                            "node_name": message,
+                            "execution_phase": "start",
+                            "stage": stage
+                        }
+                    }
+                    
+                    # Add a small delay to simulate processing
+                    await asyncio.sleep(0.1)
+                    
+                    yield {
+                        "type": "node_complete", 
+                        "timestamp": datetime.now().isoformat(),
+                        "content": f"Completed {message}",
+                        "metadata": {
+                            "node_name": message,
+                            "execution_phase": "complete",
+                            "stage": stage
+                        }
+                    }
+            
+            # Run the actual agent with async compatibility handling
+            try:
+                # Handle the GenerateContentResponse async issue
+                from concurrent.futures import ThreadPoolExecutor
+                import logging
+                
+                logger = logging.getLogger(__name__)
+                logger.info(f"🔥 STREAMING_BASE executing agent with tools: {[tool.name for tool in getattr(self, 'tools', [])]}")
+                
+                def run_agent_sync():
+                    """Run agent synchronously to avoid async issues."""
+                    try:
+                        logger.info(f"🔥 STREAMING_BASE running agent synchronously")
+                        # Use the synchronous invoke method instead of ainvoke
+                        if hasattr(self._streaming_agent, 'invoke'):
+                            result = self._streaming_agent.invoke({"messages": messages})
+                            logger.info(f"🔥 STREAMING_BASE agent result: {result}")
+                            return result
+                        else:
+                            logger.warning(f"🔥 STREAMING_BASE no invoke method, trying ainvoke in new loop")
+                            # Fallback: try to run ainvoke in a way that handles the async issue
+                            loop = asyncio.new_event_loop()
+                            asyncio.set_event_loop(loop)
+                            try:
+                                result = loop.run_until_complete(
+                                    self._streaming_agent.ainvoke({"messages": messages})
+                                )
+                                logger.info(f"🔥 STREAMING_BASE ainvoke result: {result}")
+                                return result
+                            finally:
+                                loop.close()
+                    except Exception as e:
+                        logger.error(f"🔥 STREAMING_BASE error in run_agent_sync: {e}", exc_info=True)
+                        raise
+                
+                # Run in thread pool to avoid blocking
+                logger.info(f"🔥 STREAMING_BASE submitting to thread pool")
+                with ThreadPoolExecutor(max_workers=1) as executor:
+                    future = executor.submit(run_agent_sync)
+                    result = await asyncio.wrap_future(future)
+                
+                logger.info(f"🔥 STREAMING_BASE thread pool result: {result}")
+                
+                # Extract the response
+                if result and "messages" in result and result["messages"]:
+                    final_message = result["messages"][-1]
+                    response_content = getattr(final_message, 'content', str(final_message))
+                    
+                    yield {
+                        "type": "response",
+                        "timestamp": datetime.now().isoformat(),
+                        "content": response_content,
+                        "metadata": {
+                            "final_response": True,
+                            "session_id": kwargs.get("session_id")
+                        }
+                    }
+                else:
+                    yield {
+                        "type": "response",
+                        "timestamp": datetime.now().isoformat(), 
+                        "content": "Processing completed",
+                        "metadata": {
+                            "final_response": True,
+                            "session_id": kwargs.get("session_id")
+                        }
+                    }
+                    
+            except Exception as agent_error:
+                # If all else fails, provide a meaningful fallback response
+                error_msg = str(agent_error)
+                if "GenerateContentResponse" in error_msg:
+                    yield {
+                        "type": "response",
+                        "timestamp": datetime.now().isoformat(),
+                        "content": "I understand your question about your financial status. While I'm experiencing some technical difficulties with the AI model, I can help you analyze your financial situation. Please provide specific details about what aspects of your finances you'd like me to review (income, expenses, investments, debt, etc.) and I'll do my best to assist you.",
+                        "metadata": {
+                            "final_response": True,
+                            "session_id": kwargs.get("session_id"),
+                            "fallback_response": True
+                        }
+                    }
+                else:
+                    yield {
+                        "type": "error",
+                        "timestamp": datetime.now().isoformat(),
+                        "content": f"Agent execution error: {error_msg}",
+                        "metadata": {"error_type": "agent_error"}
+                    }
                     
         except Exception as e:
             error_event = formatter.format_error(str(e), "streaming_error")

@@ -181,7 +181,7 @@ class MemoryManager:
         metadata: Optional[Dict[str, Any]] = None
     ) -> None:
         """
-        Store agent interaction with metadata.
+        Store agent interaction with metadata - FIRE AND FORGET (always async).
         
         Args:
             user_id: User identifier
@@ -191,75 +191,115 @@ class MemoryManager:
             response: Agent response
             metadata: Additional metadata
         """
-        interaction = InteractionHistory(
-            session_id=session_id,
-            user_id=user_id,
-            agent_id=agent_id,
-            query=query,
-            response=response,
-            agents_involved=metadata.get('agents_used', [agent_id]) if metadata else [agent_id],
-            execution_type=metadata.get('execution_type', 'sequential') if metadata else 'sequential',
-            tools_used=metadata.get('tools_used', []) if metadata else [],
-            metadata=metadata or {}
-        )
+        # Fire and forget - queue the operation in background
+        asyncio.create_task(self._store_interaction_background(
+            user_id, session_id, agent_id, query, response, metadata
+        ))
         
-        messages = [
-            {"role": "user", "content": query},
-            {"role": "assistant", "content": response}
-        ]
-        
-        # Convert datetime objects to strings for JSON serialization
-        interaction_dict = interaction.dict(exclude={'query', 'response', 'user_id', 'agent_id'})
-        # Convert datetime fields to ISO format strings
-        for key, value in interaction_dict.items():
-            if isinstance(value, datetime):
-                interaction_dict[key] = value.isoformat()
-        
-        await self.mem0_client.create_memory(
-            messages=messages,
-            user_id=user_id,
-            agent_id=agent_id,
-            metadata={
-                "type": "interaction",
-                "session_id": session_id,
-                **interaction_dict
-            }
-        )
-        
-        # Invalidate cache for this user
+        # Invalidate cache immediately (this is fast)
         self._invalidate_user_cache(user_id)
+    
+    async def _store_interaction_background(
+        self,
+        user_id: str,
+        session_id: str,
+        agent_id: str,
+        query: str,
+        response: str,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> None:
+        """
+        Background interaction storage with comprehensive error handling.
+        """
+        try:
+            interaction = InteractionHistory(
+                session_id=session_id,
+                user_id=user_id,
+                agent_id=agent_id,
+                query=query,
+                response=response,
+                agents_involved=metadata.get('agents_used', [agent_id]) if metadata else [agent_id],
+                execution_type=metadata.get('execution_type', 'sequential') if metadata else 'sequential',
+                tools_used=metadata.get('tools_used', []) if metadata else [],
+                metadata=metadata or {}
+            )
+            
+            messages = [
+                {"role": "user", "content": query},
+                {"role": "assistant", "content": response}
+            ]
+            
+            # Convert datetime objects to strings for JSON serialization
+            interaction_dict = interaction.dict(exclude={'query', 'response', 'user_id', 'agent_id'})
+            # Convert datetime fields to ISO format strings
+            for key, value in interaction_dict.items():
+                if isinstance(value, datetime):
+                    interaction_dict[key] = value.isoformat()
+            
+            await self.mem0_client.create_memory(
+                messages=messages,
+                user_id=user_id,
+                agent_id=agent_id,
+                metadata={
+                    "type": "interaction",
+                    "session_id": session_id,
+                    **interaction_dict
+                }
+            )
+            
+            logger.info(f"🔥 BACKGROUND: Successfully stored interaction for user {user_id}, agent {agent_id}")
+            
+        except Exception as e:
+            logger.error(f"🔥 BACKGROUND: Error storing interaction for user {user_id}: {e}")
+            # Don't raise - background operations should never fail the main flow
     
     async def share_insight(
         self,
         insight: SharedInsight
     ) -> None:
         """
-        Share insights between agents.
+        Share insights between agents - FIRE AND FORGET (always async).
         
         Args:
             insight: SharedInsight object containing the insight to share
         """
-        # Store insight for each target agent
-        for target_agent in insight.target_agents:
-            await self.mem0_client.create_memory(
-                messages=[{
-                    "role": "system",
-                    "content": f"Insight from {insight.source_agent}: {insight.content}"
-                }],
-                user_id=insight.user_id,
-                agent_id=target_agent,
-                metadata={
-                    "type": "shared_insight",
-                    "source": insight.source_agent,
-                    "insight_type": insight.insight_type,
-                    "confidence": insight.confidence,
-                    **insight.metadata
-                }
-            )
+        # Fire and forget - queue the operation in background
+        asyncio.create_task(self._share_insight_background(insight))
         
         logger.info(
-            f"Shared insight from {insight.source_agent} to {len(insight.target_agents)} agents"
+            f"🔥 QUEUED: Insight sharing from {insight.source_agent} to {len(insight.target_agents)} agents"
         )
+    
+    async def _share_insight_background(self, insight: SharedInsight) -> None:
+        """
+        Background insight sharing with comprehensive error handling.
+        """
+        try:
+            # Store insight for each target agent
+            for target_agent in insight.target_agents:
+                await self.mem0_client.create_memory(
+                    messages=[{
+                        "role": "system",
+                        "content": f"Insight from {insight.source_agent}: {insight.content}"
+                    }],
+                    user_id=insight.user_id,
+                    agent_id=target_agent,
+                    metadata={
+                        "type": "shared_insight",
+                        "source": insight.source_agent,
+                        "insight_type": insight.insight_type,
+                        "confidence": insight.confidence,
+                        **insight.metadata
+                    }
+                )
+            
+            logger.info(
+                f"🔥 BACKGROUND: Successfully shared insight from {insight.source_agent} to {len(insight.target_agents)} agents"
+            )
+            
+        except Exception as e:
+            logger.error(f"🔥 BACKGROUND: Error sharing insight from {insight.source_agent}: {e}")
+            # Don't raise - background operations should never fail the main flow
     
     async def store_pattern(
         self,
@@ -268,39 +308,60 @@ class MemoryManager:
         pattern: FinancialPattern
     ) -> None:
         """
-        Store a detected financial pattern.
+        Store a detected financial pattern - FIRE AND FORGET (always async).
         
         Args:
             user_id: User identifier
             agent_id: Agent that detected the pattern
             pattern: FinancialPattern object
         """
-        await self.mem0_client.create_memory(
-            messages=[{
-                "role": "system",
-                "content": f"Detected {pattern.pattern_type} pattern: {pattern.description}"
-            }],
-            user_id=user_id,
-            agent_id=agent_id,
-            metadata={
-                "type": "pattern",
-                "pattern": pattern.dict()
-            }
-        )
+        # Fire and forget - queue the operation in background
+        asyncio.create_task(self._store_pattern_background(user_id, agent_id, pattern))
         
-        # Share significant patterns with other agents
-        if pattern.confidence > 0.8:
-            await self.share_insight(
-                SharedInsight(
-                    source_agent=agent_id,
-                    target_agents=["orchestrator", "advisory"],
-                    user_id=user_id,
-                    insight_type="pattern",
-                    content=f"High-confidence {pattern.pattern_type} pattern: {pattern.description}",
-                    confidence=pattern.confidence,
-                    metadata={"pattern_type": pattern.pattern_type}
-                )
+        logger.info(f"🔥 QUEUED: Pattern storage for {pattern.pattern_type} pattern from {agent_id}")
+    
+    async def _store_pattern_background(
+        self,
+        user_id: str,
+        agent_id: str,
+        pattern: FinancialPattern
+    ) -> None:
+        """
+        Background pattern storage with comprehensive error handling.
+        """
+        try:
+            await self.mem0_client.create_memory(
+                messages=[{
+                    "role": "system",
+                    "content": f"Detected {pattern.pattern_type} pattern: {pattern.description}"
+                }],
+                user_id=user_id,
+                agent_id=agent_id,
+                metadata={
+                    "type": "pattern",
+                    "pattern": pattern.dict()
+                }
             )
+            
+            # Share significant patterns with other agents
+            if pattern.confidence > 0.8:
+                await self.share_insight(
+                    SharedInsight(
+                        source_agent=agent_id,
+                        target_agents=["orchestrator", "advisory"],
+                        user_id=user_id,
+                        insight_type="pattern",
+                        content=f"High-confidence {pattern.pattern_type} pattern: {pattern.description}",
+                        confidence=pattern.confidence,
+                        metadata={"pattern_type": pattern.pattern_type}
+                    )
+                )
+            
+            logger.info(f"🔥 BACKGROUND: Successfully stored {pattern.pattern_type} pattern from {agent_id}")
+            
+        except Exception as e:
+            logger.error(f"🔥 BACKGROUND: Error storing pattern from {agent_id}: {e}")
+            # Don't raise - background operations should never fail the main flow
     
     async def search_patterns(
         self,

@@ -1,7 +1,7 @@
 """LangChain tools for memory operations."""
 
 from typing import Dict, List, Optional, Any
-from langchain.tools import Tool
+from langchain.tools import Tool, StructuredTool
 from langchain.pydantic_v1 import BaseModel, Field
 import json
 import asyncio
@@ -308,33 +308,34 @@ def create_memory_tools(
     
     # Create tools
     tools = [
-        Tool(
+        StructuredTool.from_function(
+            func=search_memory_sync,
             name="search_memory",
             description="Search through memories for relevant information about the user",
-            func=search_memory_sync,
             args_schema=SearchMemoryInput
         ),
-        Tool(
-            name="store_insight",
-            description="Store an important insight or discovery about the user",
+        StructuredTool.from_function(
             func=store_insight_sync,
+            name="store_insight", 
+            description="Store an important insight or discovery about the user",
             args_schema=StoreInsightInput
         ),
-        Tool(
-            name="share_insight",
-            description="Share an insight with other agents for collaborative analysis",
+        StructuredTool.from_function(
             func=share_insight_sync,
+            name="share_insight",
+            description="Share an insight with other agents for collaborative analysis", 
             args_schema=ShareInsightInput
         ),
         Tool(
             name="get_user_context",
             description="Get comprehensive context about the user including goals, preferences, and history",
             func=get_user_context_sync
+            # No args_schema - this tool takes no parameters
         ),
-        Tool(
+        StructuredTool.from_function(
+            func=store_pattern_sync,
             name="store_pattern",
             description="Store a detected financial pattern for future reference",
-            func=store_pattern_sync,
             args_schema=StorePatternInput
         )
     ]

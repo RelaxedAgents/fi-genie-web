@@ -5,6 +5,7 @@ from typing import Dict, Any, List, Optional, AsyncIterator
 from datetime import datetime
 import logging
 import json
+import asyncio
 
 from langgraph.prebuilt import create_react_agent
 from langgraph.graph import StateGraph, END
@@ -111,17 +112,54 @@ class BaseStreamableAgent(ABC):
         try:
             self.logger.info(f"[{self.name}] Processing query for user {user_id}: {query[:100]}...")
             
-            # Load user context from memory
+            # Load user context from memory - OPTIMIZED with parallel execution
             self.logger.debug(f"[{self.name}] Loading user context from memory")
-            user_context = await self.memory_manager.get_user_context(
-                user_id=user_id,
-                agent_id=self.name
-            )
+            
+            # Execute memory operations in parallel for better performance
+            memory_tasks = [
+                self.memory_manager.get_user_context(user_id=user_id, agent_id=self.name)
+            ]
+            
+            # Add additional memory searches if this is a financial query
+            if any(keyword in query.lower() for keyword in ['financial', 'money', 'credit', 'investment', 'portfolio']):
+                memory_tasks.extend([
+                    self.memory_manager.mem0_client.search_memories(
+                        query="financial goals preferences risk tolerance",
+                        user_id=user_id,
+                        agent_id=self.name,
+                        limit=10
+                    ),
+                    self.memory_manager.mem0_client.search_memories(
+                        query="recent interactions conversations",
+                        user_id=user_id,
+                        limit=5
+                    )
+                ])
+            
+            # Execute all memory operations in parallel
+            memory_results = await asyncio.gather(*memory_tasks, return_exceptions=True)
+            
+            # Extract results safely
+            user_context = memory_results[0] if not isinstance(memory_results[0], Exception) else None
+            additional_memories = []
+            
+            if len(memory_results) > 1:
+                for result in memory_results[1:]:
+                    if not isinstance(result, Exception):
+                        additional_memories.extend(result if isinstance(result, list) else [])
+            
+            # Handle failed user context
+            if user_context is None:
+                self.logger.warning(f"[{self.name}] Failed to load user context, using defaults")
+                user_context = type('UserContext', (), {
+                    'dict': lambda: {"financial_goals": [], "risk_tolerance": None}
+                })()
             
             # Merge contexts
             full_context = {
                 "user_context": user_context.dict(),
-                "orchestrator_context": context or {}
+                "orchestrator_context": context or {},
+                "additional_memories": additional_memories
             }
             self.logger.debug(f"[{self.name}] Context prepared with {len(full_context)} keys")
             
@@ -149,18 +187,14 @@ class BaseStreamableAgent(ABC):
                 self.logger.error(f"[{self.name}] LLM returned None result")
                 raise ValueError("LLM returned None")
             
-            # Extract response
-            if isinstance(result, dict) and "messages" in result:
-                messages_result = result.get("messages", [])
-                if messages_result and len(messages_result) > 0:
-                    response = messages_result[-1].content
-                    self.logger.info(f"[{self.name}] Successfully extracted response: {response[:100]}...")
-                else:
-                    self.logger.error(f"[{self.name}] No messages in LLM result")
-                    response = "No response generated"
+            # Simplified response extraction - get the unstructured response directly
+            if isinstance(result, dict) and "messages" in result and result["messages"]:
+                response = result["messages"][-1].content
+                self.logger.info(f"[{self.name}] Extracted response length: {len(response)} chars")
+                self.logger.info(f"[{self.name}] Response preview: {response[:200]}...")
             else:
-                self.logger.warning(f"[{self.name}] Unexpected result format, converting to string")
                 response = str(result)
+                self.logger.warning(f"[{self.name}] Fallback to string conversion: {response[:100]}...")
             
             # Log execution
             self.log_execution(query, {"status": "success", "response": response})

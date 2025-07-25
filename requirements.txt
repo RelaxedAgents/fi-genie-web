@@ -5,15 +5,17 @@ python-dotenv==1.0.0
 pydantic==2.5.3
 pydantic-settings==2.1.0
 
-# Google Cloud
-google-cloud-aiplatform==1.39.0
+# Google Cloud & AI
+google-generativeai==0.7.2
+google-cloud-aiplatform==1.56.0
 
-# LangChain ecosystem (no versions - let pip resolve)
-langchain
-langchain-google-vertexai
-langchain-google-genai
-langchain-community
-langgraph
+# LangChain ecosystem (complete set with compatible versions)
+langchain==0.2.17
+langchain-core==0.2.25
+langchain-google-vertexai==1.0.10
+langchain-google-genai==1.0.10
+langchain-community==0.2.17
+langgraph==0.0.69
 
 # Async & HTTP
 aiohttp==3.9.1
@@ -25,4 +27,4 @@ sse-starlette==1.8.2
 # Utilities
 python-multipart==0.0.6
 structlog==23.2.0
-orjson==3.9.10
+orjson==3.11.1

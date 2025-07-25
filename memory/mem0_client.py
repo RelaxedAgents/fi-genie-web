@@ -43,7 +43,7 @@ class Mem0Client:
         metadata: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
-        Create a new memory entry.
+        Create a new memory entry - FIRE AND FORGET (always async).
         
         Args:
             messages: List of message dicts with 'role' and 'content'
@@ -52,13 +52,34 @@ class Mem0Client:
             metadata: Optional metadata for the memory
             
         Returns:
-            Created memory response
+            Immediate response - actual storage happens in background
         """
         # Validate messages
         if not messages:
             logger.warning("No messages provided for memory creation")
-            return {"results": [], "relations": {}}
-            
+            return {"status": "skipped", "message": "No messages provided"}
+        
+        # Fire and forget - queue the operation in background
+        asyncio.create_task(self._create_memory_background(messages, user_id, agent_id, metadata))
+        
+        # Return immediately
+        return {
+            "status": "queued",
+            "message": f"Memory creation queued for user {user_id}",
+            "user_id": user_id,
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    async def _create_memory_background(
+        self,
+        messages: List[Dict[str, str]],
+        user_id: str,
+        agent_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> None:
+        """
+        Background memory creation with comprehensive error handling.
+        """
         payload = {
             'messages': messages,
             'user_id': user_id,
@@ -80,15 +101,15 @@ class Mem0Client:
                 ) as response:
                     if response.status != 200:
                         error_text = await response.text()
-                        logger.error(f"Failed to create memory: {response.status} - {error_text}")
-                        return {"error": error_text, "status": response.status}
+                        logger.error(f"🔥 BACKGROUND: Failed to create memory: {response.status} - {error_text}")
+                        return
                     
                     result = await response.json()
-                    logger.info(f"Created memory for user {user_id}")
-                    return result
+                    logger.info(f"🔥 BACKGROUND: Successfully created memory for user {user_id}")
+                    
         except Exception as e:
-            logger.error(f"Error creating memory: {e}")
-            return {"error": str(e)}
+            logger.error(f"🔥 BACKGROUND: Error creating memory for user {user_id}: {e}")
+            # Don't raise - background operations should never fail the main flow
     
     async def get_memories(
         self,

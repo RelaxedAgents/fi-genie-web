@@ -56,6 +56,9 @@ class FinancialDataAgent(BaseStreamableAgent):
         
         self.mcp_client = mcp_client
         self.logger = logging.getLogger(f"{__name__}.financial_data")
+        
+        # Log available tools for debugging
+        self.logger.info(f"Initialized with {len(fi_tools)} MCP tools: {[tool.name for tool in fi_tools]}")
     
     def get_system_prompt(self) -> str:
         """System prompt for financial data agent."""
@@ -92,21 +95,32 @@ class FinancialDataAgent(BaseStreamableAgent):
         Returns:
             Dict with analysis results
         """
+        self.logger.info(f"🔥 FINANCIAL_DATA_AGENT process CALLED: query='{query}', user_id='{user_id}'")
+        self.logger.info(f"🔥 FINANCIAL_DATA_AGENT available tools: {[tool.name for tool in self.tools]}")
+        
         try:
             # Check if we need to analyze specific aspects
             analysis_focus = self._determine_analysis_focus(query, context)
+            self.logger.info(f"🔥 FINANCIAL_DATA_AGENT analysis focus: {analysis_focus}")
             
             # Prepare the analysis prompt
             analysis_prompt = self._prepare_analysis_prompt(query, context, analysis_focus)
+            self.logger.debug(f"🔥 FINANCIAL_DATA_AGENT analysis prompt: {analysis_prompt[:200]}...")
             
             # Run the agent with tools
+            self.logger.info(f"🔥 FINANCIAL_DATA_AGENT invoking LLM with tools...")
             result = await self.agent.ainvoke({
                 "messages": [{"role": "user", "content": analysis_prompt}]
             })
             
+            self.logger.info(f"🔥 FINANCIAL_DATA_AGENT LLM result: {result}")
+            
             # Extract response and tool usage
             response = result.get("messages", [])[-1].content if result.get("messages") else ""
             tools_used = self._extract_tools_used(result)
+            
+            self.logger.info(f"🔥 FINANCIAL_DATA_AGENT tools used: {tools_used}")
+            self.logger.info(f"🔥 FINANCIAL_DATA_AGENT response: {response[:200]}...")
             
             # Extract any patterns detected
             patterns = self._extract_patterns(response)
@@ -128,7 +142,7 @@ class FinancialDataAgent(BaseStreamableAgent):
             }
             
         except Exception as e:
-            self.logger.error(f"Error in financial data analysis: {e}")
+            self.logger.error(f"🔥 FINANCIAL_DATA_AGENT ERROR in financial data analysis: {e}", exc_info=True)
             return await super().process(query, user_id, context)
     
     def _determine_analysis_focus(self, query: str, context: Optional[Dict[str, Any]]) -> List[str]:
@@ -218,11 +232,23 @@ class FinancialDataAgent(BaseStreamableAgent):
 """)
         
         prompt_parts.append("""
+CRITICAL: After using tools and storing insights, provide a comprehensive final response that:
+
+1. Directly answers the user's question with specific data
+2. Includes detailed breakdown with numbers and percentages
+3. Explains factors and implications clearly
+4. Provides actionable recommendations
+5. Is comprehensive (minimum 800 characters)
+
+Your FINAL response will be sent directly to the user - make it complete and detailed.
+Do NOT end with meta-commentary like "I've stored insights" or "Let me know if you have questions."
+
 Remember to:
 1. Use specific tools to fetch data
 2. Provide concrete numbers and percentages
 3. Store important insights and patterns
 4. Share significant findings with other agents if needed
+5. End with a comprehensive analysis as your final response
 """)
         
         return "\n".join(prompt_parts)

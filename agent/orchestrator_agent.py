@@ -19,17 +19,6 @@ from prompts.orchestrator_prompts import (
 logger = logging.getLogger(__name__)
 
 
-@make_streamable(StreamingConfig(
-    progress_stages={
-        1: "Understanding your question",
-        2: "Analyzing requirements", 
-        3: "Gathering information",
-        4: "Processing insights",
-        5: "Preparing response"
-    },
-    enable_token_streaming=True,
-    enable_progress_tracking=True
-))
 class OrchestratorAgent(BaseStreamableAgent):
     """
     Master orchestrator that:
@@ -49,14 +38,23 @@ class OrchestratorAgent(BaseStreamableAgent):
             gemini_service: Gemini LLM service
             sub_agents: Dictionary of agent_name -> agent instance
         """
+        # Create orchestrator-specific model with appropriate temperature
+        orchestrator_model = gemini_service.create_agent_model(
+            temperature=0.7,
+            max_tokens=8192
+        )
+        
         super().__init__(
             name="orchestrator",
             memory_manager=memory_manager,
-            gemini_service=gemini_service,
+            gemini_service=orchestrator_model,
             tools=[]  # Orchestrator doesn't need external tools
         )
         self.sub_agents = sub_agents
         self.logger = logging.getLogger(f"{__name__}.orchestrator")
+        
+        # Set model attribute for streaming decorator compatibility
+        self.model = self.gemini_service
     
     def get_system_prompt(self) -> str:
         """System prompt for orchestrator."""
@@ -76,6 +74,81 @@ class OrchestratorAgent(BaseStreamableAgent):
         """Agent description."""
         return "Master orchestrator that coordinates all agents to provide comprehensive financial assistance"
     
+    async def aquery_stream_events(
+        self,
+        user_input: str,
+        user_id: str = "default_user",
+        session_id: Optional[str] = None,
+        **kwargs
+    ) -> AsyncIterator[Dict[str, Any]]:
+        """
+        Override the streaming method to use orchestrator's custom logic.
+        """
+        self.logger.info(f"🔥 ORCHESTRATOR aquery_stream_events CALLED: query='{user_input}', user_id='{user_id}'")
+        
+        try:
+            # Emit progress events
+            config = self._streaming_config or self.get_default_streaming_config()
+            
+            if config.enable_progress_tracking and config.progress_stages:
+                for stage, message in config.progress_stages.items():
+                    self.logger.debug(f"🔥 ORCHESTRATOR emitting progress stage {stage}: {message}")
+                    yield {
+                        "type": "node_start",
+                        "timestamp": datetime.now().isoformat(),
+                        "content": f"Starting {message}",
+                        "metadata": {
+                            "node_name": message,
+                            "execution_phase": "start",
+                            "stage": stage
+                        }
+                    }
+                    
+                    await asyncio.sleep(0.1)
+                    
+                    yield {
+                        "type": "node_complete", 
+                        "timestamp": datetime.now().isoformat(),
+                        "content": f"Completed {message}",
+                        "metadata": {
+                            "node_name": message,
+                            "execution_phase": "complete",
+                            "stage": stage
+                        }
+                    }
+            
+            # Use the orchestrator's custom process method
+            self.logger.info(f"🔥 ORCHESTRATOR calling custom process method")
+            result = await self.process(
+                query=user_input,
+                user_id=user_id,
+                session_id=session_id,
+                context=kwargs.get("context")
+            )
+            
+            self.logger.info(f"🔥 ORCHESTRATOR process returned: {result}")
+            
+            # Emit final response
+            yield {
+                "type": "response",
+                "timestamp": datetime.now().isoformat(),
+                "content": result.get("response", ""),
+                "metadata": {
+                    "final_response": True,
+                    "session_id": session_id,
+                    "agents_used": result.get("metadata", {}).get("agents_used", [])
+                }
+            }
+            
+        except Exception as e:
+            self.logger.error(f"🔥 ORCHESTRATOR aquery_stream_events ERROR: {e}", exc_info=True)
+            yield {
+                "type": "error",
+                "timestamp": datetime.now().isoformat(),
+                "content": f"Orchestrator error: {str(e)}",
+                "metadata": {"error_type": "orchestrator_error"}
+            }
+
     async def process(
         self, 
         query: str, 
@@ -156,24 +229,37 @@ class OrchestratorAgent(BaseStreamableAgent):
             }
     
     async def _load_context(self, user_id: str, query: str) -> Dict[str, Any]:
-        """Load relevant context from memory."""
-        # Get user context
-        user_context = await self.memory_manager.get_user_context(
-            user_id=user_id,
-            agent_id=self.name
+        """Load relevant context from memory - OPTIMIZED with parallel execution."""
+        memory_search_limit = int(os.getenv("MEMORY_SEARCH_LIMIT", "10"))
+        
+        # Execute all memory operations in parallel for significant speed improvement
+        user_context, relevant_memories = await asyncio.gather(
+            # Get user context
+            self.memory_manager.get_user_context(
+                user_id=user_id,
+                agent_id=self.name
+            ),
+            # Search for relevant past interactions
+            self.memory_manager.mem0_client.search_memories(
+                query=query,
+                user_id=user_id,
+                # agent_id=self.name,  # Removed - causes Neo4j syntax error with certain queries
+                limit=memory_search_limit
+            ),
+            return_exceptions=True  # Don't fail if one operation fails
         )
         
-        # Search for relevant past interactions
-        memory_search_limit = int(os.getenv("MEMORY_SEARCH_LIMIT", "10"))
-        relevant_memories = await self.memory_manager.mem0_client.search_memories(
-            query=query,
-            user_id=user_id,
-            # agent_id=self.name,  # Removed - causes Neo4j syntax error with certain queries
-            limit=memory_search_limit
-        )
+        # Handle potential exceptions
+        if isinstance(user_context, Exception):
+            self.logger.error(f"Error getting user context: {user_context}")
+            user_context = {"financial_goals": [], "risk_tolerance": None}
+        
+        if isinstance(relevant_memories, Exception):
+            self.logger.error(f"Error searching memories: {relevant_memories}")
+            relevant_memories = []
         
         return {
-            "user_profile": user_context.dict(),
+            "user_profile": user_context.dict() if hasattr(user_context, 'dict') else user_context,
             "relevant_memories": relevant_memories,
             "timestamp": datetime.now().isoformat()
         }
@@ -215,9 +301,16 @@ class OrchestratorAgent(BaseStreamableAgent):
         - Recent Topics: {recent_topics}
         
         Available Agents:
-        1. financial_data - For personal financial data, transactions, spending patterns
-        2. market_research - For market trends, news, external research
-        3. advisory - For recommendations and financial advice
+        1. financial_data - For personal financial data, transactions, spending patterns, net worth, credit score, account balances, investment portfolios
+        2. market_research - For market trends, news, external research, economic analysis
+        3. advisory - For recommendations and financial advice based on data analysis
+        
+        ROUTING RULES (MANDATORY):
+        - If query mentions: "net worth", "credit score", "transactions", "balance", "spending", "assets", "liabilities", "portfolio", "investments", "EPF", "mutual fund", "stock" → MUST include "financial_data"
+        - If query asks for: market trends, news, economic outlook → include "market_research"  
+        - If query asks for: advice, recommendations, planning → include "advisory"
+        - For comprehensive financial analysis → use sequential: ["financial_data", "advisory"]
+        - For market-based advice → use sequential: ["market_research", "advisory"]
         
         Respond with a JSON object:
         {{
@@ -227,8 +320,9 @@ class OrchestratorAgent(BaseStreamableAgent):
         }}
         
         Guidelines:
+        - Use sequential execution when one agent's output is needed by another (e.g., financial_data → advisory)
         - Use parallel execution when agents don't depend on each other
-        - Use sequential when one agent's output is needed by another
+        - ALWAYS include financial_data for personal financial queries
         - Include only necessary agents
         """
         
@@ -391,7 +485,19 @@ class OrchestratorAgent(BaseStreamableAgent):
                     if results:
                         accumulated_context["previous_agents"] = results
                     
+                    self.logger.info(f"🔥 ORCHESTRATOR calling {agent_name} agent...")
                     result = await agent.process(query, user_id, accumulated_context)
+                    
+                    # DEBUG: Log what we received from the agent
+                    self.logger.info(f"🔥 ORCHESTRATOR received from {agent_name}:")
+                    self.logger.info(f"🔥   - Type: {type(result)}")
+                    self.logger.info(f"🔥   - Keys: {list(result.keys()) if isinstance(result, dict) else 'Not a dict'}")
+                    if isinstance(result, dict) and "response" in result:
+                        response_preview = result["response"][:300] if result["response"] else "EMPTY RESPONSE"
+                        self.logger.info(f"🔥   - Response preview: {response_preview}...")
+                    else:
+                        self.logger.error(f"🔥   - NO RESPONSE KEY in result: {result}")
+                    
                     results[agent_name] = result
                     
                     # Add this agent's response to context for next agent
@@ -404,6 +510,7 @@ class OrchestratorAgent(BaseStreamableAgent):
                         "error": str(e)
                     }
         
+        self.logger.info(f"🔥 ORCHESTRATOR final results keys: {list(results.keys())}")
         return results
     
     async def _synthesize_response(
@@ -417,34 +524,58 @@ class OrchestratorAgent(BaseStreamableAgent):
         This is where the orchestrator creates the final user response.
         """
         
-        # Prepare agent results summary
+        # DEBUG: Log what we're working with
+        self.logger.info(f"🔥 SYNTHESIS: Processing {len(agent_results)} agent results")
+        for agent_name, result in agent_results.items():
+            self.logger.info(f"🔥 SYNTHESIS: {agent_name} result type: {type(result)}")
+            if isinstance(result, dict):
+                self.logger.info(f"🔥 SYNTHESIS: {agent_name} keys: {list(result.keys())}")
+                response_content = result.get('response', 'NO RESPONSE KEY')
+                self.logger.info(f"🔥 SYNTHESIS: {agent_name} response length: {len(response_content) if response_content else 0}")
+                self.logger.info(f"🔥 SYNTHESIS: {agent_name} response preview: {response_content[:200] if response_content else 'EMPTY'}...")
+        
+        # Prepare agent results summary with better error handling
         results_summary = []
         for agent_name, result in agent_results.items():
-            if "error" not in result:
-                results_summary.append(f"{agent_name}:\n{result.get('response', 'No response')}")
+            if isinstance(result, dict) and "error" not in result:
+                response_text = result.get('response', '')
+                if response_text and response_text.strip():
+                    results_summary.append(f"{agent_name}:\n{response_text}")
+                    self.logger.info(f"🔥 SYNTHESIS: Added {agent_name} to results_summary ({len(response_text)} chars)")
+                else:
+                    self.logger.error(f"🔥 SYNTHESIS: {agent_name} has empty response: '{response_text}'")
+                    results_summary.append(f"{agent_name}:\nNo response available")
+            else:
+                self.logger.error(f"🔥 SYNTHESIS: {agent_name} has error or invalid format: {result}")
+        
+        self.logger.info(f"🔥 SYNTHESIS: Final results_summary has {len(results_summary)} entries")
         
         synthesis_prompt = f"""
-        Create a comprehensive, coherent response to the user's query by synthesizing the information from different agents.
-        
-        User Query: {query}
-        
-        Agent Results:
+        The user asked: {query}
+
+        Agent Analysis:
         {chr(10).join(results_summary)}
-        
-        User Profile:
+
+        CRITICAL INSTRUCTIONS:
+        - If the agent provided detailed analysis with specific data, present it directly to the user
+        - Do NOT generate generic responses when detailed data is available
+        - Preserve all specific numbers, scores, percentages, and recommendations
+        - Only synthesize if multiple agents provided different perspectives
+        - Do NOT say "cannot access" or "unable to" if agent provided detailed information
+
+        User Profile Context:
         - Goals: {context['user_profile'].get('financial_goals', [])}
         - Risk Tolerance: {context['user_profile'].get('risk_tolerance', 'unknown')}
-        
-        Guidelines:
-        1. Directly address the user's question
-        2. Integrate insights from all agents seamlessly
-        3. Provide specific numbers and recommendations where available
-        4. Maintain a helpful, professional tone
-        5. If any agent encountered errors, work with available information
-        6. End with actionable next steps if appropriate
-        
-        Create a natural, flowing response that doesn't mention the individual agents.
+
+        If the agent analysis above contains specific data (numbers, scores, recommendations), 
+        present that analysis directly to the user. Maintain the professional structure and formatting.
+
+        Response:
         """
+        
+        # DEBUG: Log the synthesis prompt
+        self.logger.info(f"🔥 SYNTHESIS: Prompt length: {len(synthesis_prompt)} chars")
+        self.logger.info(f"🔥 SYNTHESIS: Prompt preview: {synthesis_prompt[:500]}...")
         
         # Use LLM to synthesize
         try:
@@ -467,6 +598,24 @@ class OrchestratorAgent(BaseStreamableAgent):
                 messages = result.get("messages", [])
                 if messages and len(messages) > 0:
                     response = messages[-1].content
+                    
+                    # Simple validation: if synthesis is poor but we have detailed agent responses, use agent response
+                    if len(response) < 200 and any(len(summary) > 300 for summary in results_summary):
+                        # Find the longest, most detailed agent response
+                        longest_response = max(results_summary, key=len)
+                        agent_response = longest_response.split(':\n', 1)[-1] if ':\n' in longest_response else longest_response
+                        self.logger.warning("🔥 SYNTHESIS: Using agent response directly due to poor synthesis")
+                        return agent_response
+                    
+                    # Check for generic responses when we have detailed data
+                    if any(phrase in response.lower() for phrase in ['cannot access', 'unable to', 'not available', 'sorry']) and \
+                       any(indicator in ' '.join(results_summary).lower() for indicator in ['credit score', 'balance', 'amount', 'percentage']):
+                        # Use the detailed agent response instead
+                        longest_response = max(results_summary, key=len)
+                        agent_response = longest_response.split(':\n', 1)[-1] if ':\n' in longest_response else longest_response
+                        self.logger.warning("🔥 SYNTHESIS: Using agent response directly - synthesis generated generic response despite detailed data")
+                        return agent_response
+                    
                     self.logger.info("Successfully synthesized response")
                     return response
                 else:

@@ -92,7 +92,7 @@ async def lifespan(app: FastAPI):
         gemini_service = GeminiService(
             project_id=os.getenv("GCP_PROJECT_ID"),
             location=os.getenv("GCP_LOCATION", "us-central1"),
-            provider="direct",  # Force direct API mode
+            # provider will be read from GEMINI_PROVIDER env var (currently set to "vertex")
             api_key=os.getenv("GEMINI_API_KEY")
         )
         
@@ -137,15 +137,11 @@ async def lifespan(app: FastAPI):
         )
         
         # Initialize orchestrator with sub-agents
-        # Create a properly configured model for the orchestrator
-        orchestrator_model = gemini_service.create_agent_model(
-            temperature=0.7,
-            max_tokens=8192
-        )
-        
+        # Pass the GeminiService directly to the orchestrator
+        # The orchestrator will create its own model with the right configuration
         orchestrator = OrchestratorAgent(
             memory_manager=memory_manager,
-            gemini_service=orchestrator_model,
+            gemini_service=gemini_service,
             sub_agents={
                 "financial_data": financial_agent,
                 "market_research": market_agent,

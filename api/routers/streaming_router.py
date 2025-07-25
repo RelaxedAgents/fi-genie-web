@@ -47,9 +47,9 @@ async def stream_query(request: Request, query_request: Dict[str, Any]):
             
             # Stream events from orchestrator
             async for event in orchestrator.aquery_stream_events(
-                query=query,
+                query,
                 user_id=user_id,
-                context={"session_id": session_id}
+                session_id=session_id
             ):
                 yield f"data: {json.dumps(event)}\n\n"
             
@@ -112,7 +112,7 @@ async def stream_agent_query(
             
             # Stream events from agent
             async for event in agent.aquery_stream_events(
-                query=query,
+                user_input=query,
                 user_id=user_id
             ):
                 yield f"data: {json.dumps(event)}\n\n"
@@ -218,9 +218,9 @@ async def stream_events(request: Request, event_request: Dict[str, Any]):
             
             # Stream events with filtering
             async for event in orchestrator.aquery_stream_events(
-                query=query,
+                query,
                 user_id=user_id,
-                context={"session_id": session_id}
+                session_id=session_id
             ):
                 # Filter events if types specified
                 if event_types and event.get("type") not in event_types:
