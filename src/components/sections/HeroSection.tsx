@@ -3,10 +3,17 @@
 import React from "react"
 import { motion } from "framer-motion"
 import { ArrowRight, Sparkles } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/common/Button"
 import { fadeInUp, floatingAnimation } from "@/lib/animations"
 
 export const HeroSection: React.FC = () => {
+  const router = useRouter()
+
+  const handleGetStarted = () => {
+    router.push("/auth/login")
+  }
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-24">
       <div className="container-custom">
@@ -38,7 +45,7 @@ export const HeroSection: React.FC = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button size="lg" className="group">
+              <Button size="lg" className="group" onClick={handleGetStarted}>
                 Get Started Free
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>

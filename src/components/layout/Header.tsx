@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Menu, X, Brain } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/common/Button"
 import { cn } from "@/lib/utils"
 
@@ -14,6 +15,7 @@ const navItems = [
 ]
 
 export const Header: React.FC = () => {
+  const router = useRouter()
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -93,7 +95,7 @@ export const Header: React.FC = () => {
 
             {/* CTA Button */}
             <div className="hidden md:block">
-              <Button size="md">Get Started</Button>
+              <Button size="md" onClick={() => router.push("/auth/login")}>Get Started</Button>
             </div>
 
             {/* Mobile Menu Button */}
@@ -148,7 +150,7 @@ export const Header: React.FC = () => {
             }}
             transition={{ delay: 0.4 }}
           >
-            <Button size="lg">Get Started</Button>
+            <Button size="lg" onClick={() => router.push("/auth/login")}>Get Started</Button>
           </motion.div>
         </div>
       </motion.div>
