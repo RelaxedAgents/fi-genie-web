@@ -1,266 +1,210 @@
-# 🏦 Financial Agent - LangGraph with MCP
+# Financial AI Assistant
 
-A sophisticated financial agent built with LangGraph that integrates with a custom MCP (Model Context Protocol) server to provide AI-powered financial data access and analysis.
+A complete multi-agent financial assistant powered by Google's Gemini 2.0 Flash, with real financial data access through Fi MCP, market research via Perplexity, and persistent memory using Mem0.
 
 ## 🚀 Features
 
-- **LangGraph Agent**: Powered by Google Gemini 2.0 Flash for intelligent financial reasoning
-- **MCP Integration**: Connects to deployed MCP server with 6 financial tools
-- **Natural Language Interface**: Ask questions in plain English about your financial data  
-- **RESTful API**: Clean API endpoints for programmatic access
-- **Health Monitoring**: Built-in health checks for agent and MCP server
+- **Multi-Agent Architecture**: Orchestrator coordinates specialized agents for comprehensive financial analysis
+- **Real Financial Data**: Access actual bank transactions, net worth, credit reports via Fi MCP
+- **Market Research**: Real-time market data and news through Perplexity API
+- **Persistent Memory**: User preferences and conversation history with Mem0
+- **Streaming Responses**: Real-time progress updates and token streaming
+- **Personalized Advice**: Tailored recommendations based on user profile and goals
 
-## 🛠️ Architecture
+## 🏗️ Architecture
 
 ```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   API Client    │    │  FastAPI Server  │    │  LangGraph      │
-│   (HTTP/REST)   ├────┤   (API Layer)    ├────┤  Agent          │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                                                          │
-                                                          ▼
-                       ┌──────────────────┐    ┌─────────────────┐
-                       │   MCP Client     ├────┤  MCP Server     │
-                       │  (HTTP/JSON-RPC) │    │  (6 Tools)      │
-                       └──────────────────┘    └─────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                        User Query                             │
+└─────────────────────┬───────────────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Orchestrator Agent                         │
+│  • Intent Classification                                      │
+│  • Agent Routing                                              │
+│  • Response Synthesis                                         │
+└─────────────────────┬───────────────────────────────────────┘
+                      │
+        ┌─────────────┼─────────────┬─────────────────┐
+        ▼             ▼             ▼                 ▼
+┌───────────┐ ┌───────────┐ ┌───────────┐    ┌───────────┐
+│Financial  │ │  Market   │ │ Advisory  │    │  Memory   │
+│Data Agent │ │ Research  │ │   Agent   │    │  Manager  │
+└─────┬─────┘ └─────┬─────┘ └─────┬─────┘    └─────┬─────┘
+      │             │             │                 │
+      ▼             ▼             ▼                 ▼
+┌───────────┐ ┌───────────┐ ┌───────────┐    ┌───────────┐
+│  Fi MCP   │ │Perplexity │ │  Gemini   │    │   Mem0    │
+│   APIs    │ │    API    │ │    LLM    │    │    API    │
+└───────────┘ └───────────┘ └───────────┘    └───────────┘
 ```
 
-## 📊 Available Financial Tools
+## 📋 Prerequisites
 
-The agent has access to 6 financial data tools via MCP:
-
-1. **fetch_net_worth** - Get total net worth including assets and liabilities
-2. **fetch_credit_report** - Retrieve credit score and credit report information  
-3. **fetch_epf_details** - Access EPF (Employee Provident Fund) account details
-4. **fetch_mf_transactions** - Get mutual fund transaction history
-5. **fetch_bank_transactions** - Retrieve bank account transactions
-6. **fetch_stock_transactions** - Access stock trading history
-
-## 🔧 Setup & Installation
-
-### Prerequisites
-
-- Python 3.8+
+- Python 3.9+
 - Google Cloud Project with Vertex AI enabled
-- Access to the MCP server (already configured)
+- Perplexity API key
+- Access to Fi MCP endpoints
+- Access to Mem0 service
 
-### Installation
+## 🛠️ Installation
 
-1. **Clone and navigate to the project:**
-   ```bash
-   cd ai-agent
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Configure Google Cloud credentials:**
-   ```bash
-   # Authenticate with Google Cloud
-   gcloud auth application-default login
-   
-   # Or set environment variable for service account
-   export GOOGLE_APPLICATION_CREDENTIALS="path/to/service-account.json"
-   ```
-
-4. **Run the application:**
-   ```bash
-   python main.py
-   ```
-
-The server will start on `http://localhost:8080`
-
-## 🌐 API Endpoints
-
-### Health Check
-```http
-GET /health
+1. Clone the repository:
+```bash
+git clone https://github.com/thepm25/google_hackathon_finance_agent.git
+cd google_hackathon_finance_agent
 ```
-Returns agent and MCP server health status.
 
-### List Available Tools
-```http
-GET /agent/tools
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
 ```
-Returns list of available financial tools.
 
-### Query Agent
-```http
-POST /agent/query
-Content-Type: application/json
-X-Phone-Number: your_phone_number
-
-{
-  "query": "What's my net worth?"
-}
+3. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your configuration
 ```
-Send natural language queries to the financial agent. **Requires X-Phone-Number header**.
 
-### Direct Tool Execution
-```http
-POST /agent/tool/{tool_name}
-X-Phone-Number: your_phone_number
+4. Configure Google Cloud credentials:
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS="path/to/your/service-account-key.json"
+# Or use gcloud auth
+gcloud auth application-default login
 ```
-Execute specific tools directly (bypass agent reasoning). **Requires X-Phone-Number header**.
 
-Available tool names:
-- `fetch_net_worth`
-- `fetch_credit_report` 
-- `fetch_epf_details`
-- `fetch_mf_transactions`
-- `fetch_bank_transactions`
-- `fetch_stock_transactions`
+## 🚀 Running the Application
+
+### Start the API Server
+
+```bash
+# Using uvicorn directly
+uvicorn api.main_v2:app --host 0.0.0.0 --port 8080 --reload
+
+# Or using Python
+python -m api.main_v2
+```
+
+### Test the System
+
+```bash
+# Run comprehensive tests
+python test_agentic_system.py
+```
+
+## 📡 API Endpoints
+
+### Chat Endpoints
+
+- `POST /chat/query` - Process a financial query
+- `GET /chat/history/{user_id}` - Get chat history
+- `GET /chat/context/{user_id}` - Get user context
+- `POST /chat/feedback` - Submit feedback
+- `POST /chat/preferences` - Update user preferences
+
+### Streaming Endpoints
+
+- `POST /stream/query` - Stream query response with progress
+- `POST /stream/agent/{agent_name}` - Stream to specific agent
+- `GET /stream/test` - Test streaming functionality
+- `POST /stream/events` - Stream with event filtering
+
+### System Endpoints
+
+- `GET /` - API information
+- `GET /health` - Health check
+- `GET /agents` - List all agents
+- `GET /agents/{agent_name}/capabilities` - Get agent capabilities
 
 ## 💬 Example Queries
 
-Try these natural language queries with the agent:
+```python
+# Basic financial status
+"What's my current financial status and spending patterns?"
 
-- "What is my current net worth?"
-- "Show me my recent bank transactions"
-- "What is my credit score?"
-- "How much do I have in my EPF account?"
-- "Show me my mutual fund investments"
-- "What are my recent stock transactions?"
-- "Give me a financial summary"
+# Investment advice
+"Should I invest in technology stocks given my risk profile?"
 
-## 🔍 Usage Examples
+# Budget planning
+"How can I reduce my expenses and save more money?"
 
-### Using cURL
+# Market research
+"What are the market trends for renewable energy investments?"
 
-**Health Check:**
-```bash
-curl http://localhost:8080/health
+# Comprehensive planning
+"Create a budget plan based on my income and expenses"
 ```
 
-**Query Agent:**
-```bash
-curl -X POST http://localhost:8080/agent/query \
-  -H "Content-Type: application/json" \
-  -H "X-Phone-Number: 9876543210" \
-  -d '{"query": "What is my net worth?"}'
-```
+## 🔧 Configuration
 
-**Direct Tool Call:**
-```bash
-curl -X POST http://localhost:8080/agent/tool/fetch_net_worth \
-  -H "X-Phone-Number: 9876543210"
-```
+All configurations are in `.env` file:
 
-## 🏗️ Project Structure
+- **LLM Settings**: Model, temperature, max tokens
+- **API Keys**: Perplexity, Gemini (if using direct API)
+- **Agent Behavior**: Timeouts, parallel execution, caching
+- **Feature Flags**: Enable/disable specific features
 
-```
-ai-agent/
-├── agent/                 # Individual MCP agent implementations
-│   ├── __init__.py
-│   └── fi_mcp_agent.py    # Financial MCP Agent (LangGraph implementation)
-├── prompts/               # Centralized prompt templates
-│   ├── __init__.py
-│   └── fi_mcp_prompts.py  # Financial MCP Agent prompts (broken into sections)
-├── api/                   # FastAPI application
-│   ├── __init__.py
-│   ├── main.py            # FastAPI app
-│   └── routers/
-│       ├── __init__.py
-│       └── fi_mcp_routes.py # Financial MCP endpoints
-├── services/              # Business logic
-│   ├── __init__.py
-│   └── mcp_service.py     # MCP client service
-├── tools/                 # Tool implementations
-│   ├── __init__.py
-│   └── fi_mcp_tools.py    # Financial MCP tool wrappers
-├── config/                # Configuration
-│   ├── __init__.py
-│   ├── settings.py        # App settings
-│   └── vertex_ai_config.json # Vertex AI configuration
-├── utils/                 # Utilities
-│   ├── __init__.py
-│   └── helpers.py         # General helpers (if needed)
-├── main.py                # Entry point (imports FastAPI app)
-├── requirements.txt       # Python dependencies
-└── README.md             # This file
-```
+## 🏛️ System Components
 
-## ⚙️ Configuration
+### Agents
 
-The application uses `config/vertex_ai_config.json` for Vertex AI configuration:
+1. **Orchestrator Agent**: Master coordinator
+   - Routes queries to appropriate agents
+   - Manages parallel/sequential execution
+   - Synthesizes final responses
 
-```json
-{
-  "project_id": "your-google-cloud-project",
-  "location": "asia-south1", 
-  "staging_bucket": "gs://your-staging-bucket"
-}
-```
+2. **Financial Data Agent**: Personal finance specialist
+   - Fetches transactions, net worth, credit reports
+   - Analyzes spending patterns
+   - Detects anomalies
 
-MCP server configuration is handled automatically:
-- **Server URL**: `https://idx-fi-mcp-dev-94592976-554022930653.asia-south1.run.app`
-- **Protocol**: HTTP with JSON-RPC 2.0
-- **Authentication**: Phone number header + session ID
+3. **Market Research Agent**: External data analyst
+   - Searches market trends and news
+   - Provides investment insights
+   - Tracks economic indicators
+
+4. **Advisory Agent**: Recommendation engine
+   - Provides personalized advice
+   - Creates action plans
+   - Suggests improvements
+
+### Services
+
+- **Gemini Service**: LLM operations via Vertex AI
+- **Perplexity Service**: Market research and web search
+- **MCP Client**: Financial data access
+- **Memory Manager**: User context and history
 
 ## 🔒 Security
 
-- Phone number authentication for MCP server access
-- Session-based communication with unique session IDs
-- Google Cloud IAM for Vertex AI access
-- No sensitive data stored locally
+- Environment-based configuration
+- API rate limiting
+- CORS protection
+- Secure credential management
 
-## 🐛 Troubleshooting
+## 📊 Monitoring
 
-### Common Issues
-
-1. **Agent initialization fails:**
-   - Check Google Cloud credentials
-   - Verify Vertex AI is enabled in your project
-   - Ensure config.json has correct values
-
-2. **MCP server connection fails:**
-   - Check internet connectivity
-   - Verify MCP server is running
-   - Check phone number format
-
-3. **Tool execution errors:**
-   - Verify MCP server has access to financial data
-   - Check session ID validity
-   - Review server logs for detailed errors
-
-### Debug Mode
-
-Run with debug enabled:
-```bash
-export FLASK_DEBUG=1
-python main.py
-```
-
-## 🚦 Health Monitoring
-
-The application includes comprehensive health checks:
-
-- **Agent Status**: Confirms LangGraph agent is initialized
-- **MCP Connection**: Tests MCP server connectivity  
-- **Tool Availability**: Verifies all financial tools are accessible
-- **Session Management**: Tracks MCP session status
+- Comprehensive logging
+- Error tracking
+- Performance metrics
+- Health checks
 
 ## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
 ## 📄 License
 
-This project is part of the AI Agent development framework.
+This project is licensed under the MIT License.
 
 ## 🙏 Acknowledgments
 
-- Built with [LangGraph](https://langchain-ai.github.io/langgraph/) for agent orchestration
-- Powered by [Google Vertex AI](https://cloud.google.com/vertex-ai) and Gemini
-- Uses [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) for tool integration
-- FastAPI for the web framework
-
----
-
-**Note**: This agent is designed for financial data access and analysis. Always verify financial information through official sources.
+- Google Gemini team for the powerful LLM
+- Fi team for financial data access
+- Perplexity for market research capabilities
+- Mem0 for memory persistence

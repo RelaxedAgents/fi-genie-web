@@ -1,133 +1,101 @@
-"""Financial MCP Agent - LangGraph Agent with MCP tool integration."""
+"""Financial MCP Agent - Main agent class for the API."""
 
-import json
-from typing import Dict, Any, List, Optional
-from langchain_google_vertexai import ChatVertexAI
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
-from langgraph.prebuilt import create_react_agent
-from langchain_core.prompts import ChatPromptTemplate
+from typing import Dict, List, Any, Optional
+import logging
+from datetime import datetime
 
+from langchain_core.messages import HumanMessage, SystemMessage
+from langgraph.graph import StateGraph, END
+from langgraph.graph.state import CompiledStateGraph
+
+from services.gemini_service import GeminiService
 from services.mcp_service import MCPClient
 from tools.fi_mcp_tools import create_mcp_tools
-from prompts.fi_mcp_prompts import get_fi_mcp_system_prompt
+
+logger = logging.getLogger(__name__)
 
 
 class FiMcpAgent:
-    """Financial MCP Agent - LangGraph agent for financial data queries using MCP tools."""
+    """
+    Financial MCP Agent that provides access to personal financial data.
+    """
     
-    def __init__(self, 
-                 project_id: str, 
-                 location: str, 
-                 mcp_server_url: str, 
-                 phone_number: str):
+    def __init__(self, project_id: str, location: str, mcp_server_url: str, phone_number: str):
         """
         Initialize the Financial MCP Agent.
         
         Args:
-            project_id: Google Cloud project ID
-            location: Google Cloud location
-            mcp_server_url: URL of the MCP server
-            phone_number: Phone number for MCP authentication
+            project_id: GCP project ID
+            location: GCP location
+            mcp_server_url: MCP server URL
+            phone_number: User's phone number
         """
         self.project_id = project_id
         self.location = location
-        self.mcp_server_url = mcp_server_url
         self.phone_number = phone_number
         
-        # Initialize MCP client
-        self.mcp_client = MCPClient(mcp_server_url, phone_number)
+        # Initialize services
+        self.gemini_service = GeminiService(project_id=project_id, location=location)
+        self.mcp_client = MCPClient(base_url=mcp_server_url, phone_number=phone_number)
         
-        # Initialize Vertex AI model
-        self.model = ChatVertexAI(
-            model_name="gemini-1.5-flash",
-            project=project_id,
-            location=location,
-            temperature=0.1,
-            max_output_tokens=2048,
-            model_kwargs={"system_instruction": get_fi_mcp_system_prompt()}
-        )
-        
-        # Create MCP tools
+        # Create tools
         self.tools = create_mcp_tools(self.mcp_client)
         
-        # Create the agent
+        # Initialize the agent
         self.agent = self._create_agent()
-    
-    def _create_agent(self):
-        """Create the LangGraph ReAct agent."""
         
-        # Create the ReAct agent with tools (system instruction is in the model)
+        logger.info(f"FiMcpAgent initialized for phone: {phone_number}")
+    
+    def _create_agent(self) -> CompiledStateGraph:
+        """Create the LangGraph agent."""
+        from langgraph.prebuilt import create_react_agent
+        
+        # System prompt
+        system_prompt = """You are a helpful financial assistant with access to user's personal financial data.
+        
+        You have access to the following tools:
+        - fetch_net_worth: Get user's assets and liabilities
+        - fetch_credit_report: Get credit score and report
+        - fetch_epf_details: Get EPF account details
+        - fetch_mf_transactions: Get mutual fund transactions
+        - fetch_bank_transactions: Get bank transactions
+        - fetch_stock_transactions: Get stock transactions
+        
+        Always be helpful and provide accurate information based on the data available.
+        If you don't have access to certain information, let the user know.
+        """
+        
+        # Create the agent
         agent = create_react_agent(
-            model=self.model,
-            tools=self.tools
+            model=self.gemini_service.get_model(),
+            tools=self.tools,
+            state_modifier=system_prompt
         )
         
         return agent
     
-    def query(self, user_input: str) -> Dict[str, Any]:
-        """
-        Process a user query and return the agent's response.
-        
-        Args:
-            user_input: The user's question or request
-            
-        Returns:
-            Dict containing the response and metadata
-        """
+    def health_check(self) -> Dict[str, Any]:
+        """Check health of the agent and its dependencies."""
         try:
-            # Enhance user input with format reminder for structured responses
-            enhanced_input = f"""Please provide a structured financial analysis with:
-1. **Executive Summary** (2-3 sentences)
-2. **Detailed Analysis** (with specific numbers and breakdown)
-3. **Risk Assessment** (identify concerns or positive indicators)
-4. **Recommendations** (actionable advice)
-5. **Next Steps** (follow-up actions)
-6. **Educational Note** (brief financial concept explanation)
-
-User Query: {user_input}"""
+            # Check MCP client
+            mcp_health = self.mcp_client.health_check()
             
-            # Create the input message
-            messages = [HumanMessage(content=enhanced_input)]
-            
-            # Run the agent
-            result = self.agent.invoke({"messages": messages})
-            
-            # Extract the final response
-            final_message = result["messages"][-1]
-            
-            response = {
-                "response": final_message.content,
-                "status": "success",
-                "tool_calls": self._extract_tool_calls(result["messages"]),
-                "session_id": self.mcp_client.session_id
-            }
-            
-            return response
-            
-        except Exception as e:
             return {
-                "response": f"I encountered an error while processing your request: {str(e)}",
-                "status": "error",
-                "error": str(e),
-                "session_id": self.mcp_client.session_id
+                "status": "healthy",
+                "mcp_client": "healthy" if mcp_health else "unhealthy",
+                "gemini_service": "healthy",
+                "tools_loaded": len(self.tools),
+                "phone_number": self.phone_number
             }
-    
-    def _extract_tool_calls(self, messages: List) -> List[Dict[str, Any]]:
-        """Extract information about tool calls from the message history."""
-        tool_calls = []
-        
-        for message in messages:
-            if hasattr(message, 'tool_calls') and message.tool_calls:
-                for tool_call in message.tool_calls:
-                    tool_calls.append({
-                        "tool": tool_call.get("name", "unknown"),
-                        "args": tool_call.get("args", {}),
-                    })
-        
-        return tool_calls
+        except Exception as e:
+            logger.error(f"Health check failed: {e}")
+            return {
+                "status": "unhealthy",
+                "error": str(e)
+            }
     
     def get_available_tools(self) -> List[Dict[str, str]]:
-        """Get list of available tools and their descriptions."""
+        """Get list of available tools."""
         return [
             {
                 "name": tool.name,
@@ -136,21 +104,78 @@ User Query: {user_input}"""
             for tool in self.tools
         ]
     
-    def health_check(self) -> Dict[str, Any]:
-        """Check if the agent and MCP server are healthy."""
+    async def query(self, query: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """
+        Process a query through the agent.
+        
+        Args:
+            query: User's query
+            context: Optional context
+            
+        Returns:
+            Agent's response
+        """
         try:
-            # Test MCP server connection
-            tools_result = self.mcp_client.list_tools()
+            # Prepare messages
+            messages = [HumanMessage(content=query)]
+            
+            # Invoke the agent
+            result = await self.agent.ainvoke({
+                "messages": messages
+            })
+            
+            # Extract the response
+            response = result["messages"][-1].content if result.get("messages") else "No response generated"
             
             return {
-                "status": "healthy",
-                "mcp_server": "connected",
-                "tools_available": len(self.tools),
-                "session_id": self.mcp_client.session_id
+                "response": response,
+                "status": "success",
+                "timestamp": datetime.now().isoformat()
             }
+            
         except Exception as e:
+            logger.error(f"Error processing query: {e}")
             return {
-                "status": "unhealthy",
+                "response": f"Error processing query: {str(e)}",
+                "status": "error",
+                "timestamp": datetime.now().isoformat()
+            }
+    
+    async def call_tool(self, tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Call a specific tool directly.
+        
+        Args:
+            tool_name: Name of the tool
+            arguments: Tool arguments
+            
+        Returns:
+            Tool result
+        """
+        try:
+            # Find the tool
+            tool = next((t for t in self.tools if t.name == tool_name), None)
+            if not tool:
+                return {
+                    "error": f"Tool '{tool_name}' not found",
+                    "available_tools": [t.name for t in self.tools]
+                }
+            
+            # Execute the tool
+            result = await tool.ainvoke(arguments)
+            
+            return {
+                "result": result,
+                "status": "success",
+                "tool": tool_name,
+                "timestamp": datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Error calling tool {tool_name}: {e}")
+            return {
                 "error": str(e),
-                "mcp_server": "disconnected"
+                "status": "error",
+                "tool": tool_name,
+                "timestamp": datetime.now().isoformat()
             }

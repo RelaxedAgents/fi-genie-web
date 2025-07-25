@@ -68,7 +68,8 @@ class MCPClient:
                 f"{self.base_url}/mcp/stream",
                 headers=headers,
                 json=request_data.dict(),
-                timeout=30
+                timeout=30,
+                verify=False  # Disable SSL verification for testing
             )
             response.raise_for_status()
             
@@ -109,7 +110,8 @@ class MCPClient:
                 f"{self.base_url}/mcp/stream",
                 headers=headers,
                 json=request_data.dict(),
-                timeout=30
+                timeout=30,
+                verify=False  # Disable SSL verification for testing
             )
             response.raise_for_status()
             
@@ -124,3 +126,22 @@ class MCPClient:
             raise Exception(f"Failed to list MCP tools: {str(e)}")
         except json.JSONDecodeError as e:
             raise Exception(f"Invalid JSON response from MCP server: {str(e)}")
+    
+    async def health_check(self) -> bool:
+        """
+        Check if MCP service is healthy.
+        
+        Returns:
+            True if service is healthy, False otherwise
+        """
+        try:
+            # Try to list tools as a health check
+            # This is a lightweight operation that verifies connectivity
+            self.list_tools()
+            return True
+        except Exception as e:
+            # Log the error but don't raise it
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"MCP health check failed: {e}")
+            return False

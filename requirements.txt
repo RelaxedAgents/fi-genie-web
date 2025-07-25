@@ -1,20 +1,28 @@
-# Dev environment
-pip
-autopep8
+# Core API
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-dotenv==1.0.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
 
-# FastAPI Application
-fastapi
-uvicorn[standard]
+# Google Cloud
+google-cloud-aiplatform==1.39.0
 
-# Google Cloud and AI
-google-cloud-aiplatform
-
-# LangGraph and LangChain
-langgraph
-langchain-google-vertexai
-langchain-core
+# LangChain ecosystem (no versions - let pip resolve)
 langchain
+langchain-google-vertexai
+langchain-google-genai
+langchain-community
+langgraph
 
-# Additional dependencies
-requests
-pydantic
+# Async & HTTP
+aiohttp==3.9.1
+httpx==0.25.2
+
+# Streaming
+sse-starlette==1.8.2
+
+# Utilities
+python-multipart==0.0.6
+structlog==23.2.0
+orjson==3.9.10
