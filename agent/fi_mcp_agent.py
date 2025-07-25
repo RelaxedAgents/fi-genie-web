@@ -37,14 +37,14 @@ class FiMcpAgent:
         # Initialize MCP client
         self.mcp_client = MCPClient(mcp_server_url, phone_number)
         
-        # Initialize Vertex AI model with system instruction
+        # Initialize Vertex AI model
         self.model = ChatVertexAI(
             model_name="gemini-1.5-flash",
             project=project_id,
             location=location,
             temperature=0.1,
             max_output_tokens=2048,
-            system_instruction=get_fi_mcp_system_prompt()
+            model_kwargs={"system_instruction": get_fi_mcp_system_prompt()}
         )
         
         # Create MCP tools

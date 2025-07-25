@@ -8,6 +8,7 @@ import vertexai
 from agent.fi_mcp_agent import FiMcpAgent
 from config.settings import settings
 from api.routers.fi_mcp_routes import router as fi_mcp_router
+from api.routers.streaming_routes import router as streaming_router
 
 
 # Initialize FastAPI app
@@ -38,6 +39,7 @@ except Exception as e:
 
 # Include routers
 app.include_router(fi_mcp_router)
+app.include_router(streaming_router)
 
 
 @app.get("/health", tags=["Health"])
@@ -75,7 +77,12 @@ async def root():
         "agent_endpoints": {
             "tools": "/agent/tools",
             "query": "/agent/query",
-            "direct_tool": "/agent/tool/{tool_name}"
+            "direct_tool": "/agent/tool/{tool_name}",
+            "streaming": {
+                "query": "/agent/stream/query",
+                "query_native": "/agent/stream/query/native",
+                "test": "/agent/stream/test"
+            }
         }
     }
 
