@@ -1,26 +1,152 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 10 11 15;
+    --foreground: 255 255 255;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-[#0A0B0F] text-white font-sans;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-[#0D0E14];
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-700 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-600;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* Glass effect */
+  .glass {
+    @apply bg-white/[0.08] backdrop-blur-xl border border-white/[0.08];
+  }
+
+  .glass-hover {
+    @apply hover:bg-white/[0.12] hover:border-white/[0.12] transition-all duration-300;
+  }
+
+  /* Primary button */
+  .btn-primary {
+    @apply px-8 py-4 bg-gradient-primary text-white font-semibold rounded-lg;
+    @apply hover:shadow-[0_0_30px_rgba(0,212,255,0.5)] transition-all duration-300;
+    @apply transform hover:scale-105 active:scale-100;
+  }
+
+  /* Secondary button */
+  .btn-secondary {
+    @apply px-8 py-4 bg-transparent text-primary font-semibold rounded-lg;
+    @apply border-2 border-primary/50 hover:border-primary;
+    @apply hover:bg-primary/10 transition-all duration-300;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-primary bg-clip-text text-transparent;
+  }
+
+  /* Card component */
+  .card {
+    @apply glass rounded-2xl p-6 glass-hover;
+  }
+
+  /* Glow effect */
+  .glow {
+    filter: drop-shadow(0 0 20px currentColor);
+  }
+
+  /* Section padding */
+  .section-padding {
+    @apply py-20 md:py-32;
+  }
+
+  /* Container */
+  .container-custom {
+    @apply container mx-auto px-6 md:px-8 lg:px-12;
+  }
+
+  /* Animated gradient background */
+  .animated-gradient {
+    background: linear-gradient(-45deg, #00D4FF, #6B46F2, #9945FF, #00FF88);
+    background-size: 400% 400%;
+    animation: gradient-xy 15s ease infinite;
+  }
+
+  /* Particle effect */
+  .particle {
+    @apply absolute rounded-full bg-primary/20 animate-float;
+  }
+
+  /* Blur orb */
+  .blur-orb {
+    @apply absolute rounded-full blur-3xl opacity-30;
+  }
+}
+
+@layer utilities {
+  /* Text balance for better typography */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Animation delays */
+  .animation-delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+
+  .animation-delay-500 {
+    animation-delay: 500ms;
+  }
+
+  /* Perspective for 3D effects */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  /* Preserve 3D */
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  /* No scrollbar */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }

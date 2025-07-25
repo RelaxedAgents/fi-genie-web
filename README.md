@@ -1,36 +1,123 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FiGenie - AI-Powered Personal Finance Assistant
 
-## Getting Started
+A modern, visually stunning landing page for an AI-powered personal finance application built with Next.js 14, TypeScript, Tailwind CSS, and Framer Motion.
 
-First, run the development server:
+## 🚀 Features
 
+- **Modern DeFi-Inspired Design**: Sophisticated dark theme with glassmorphism effects
+- **Fully Responsive**: Mobile-first design that looks great on all devices
+- **Smooth Animations**: Powered by Framer Motion for engaging user experience
+- **TypeScript**: Full type safety throughout the application
+- **Component-Based Architecture**: Reusable, modular components
+- **Performance Optimized**: Fast loading with Next.js 14 App Router
+- **SEO Ready**: Meta tags and structured data included
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Animations**: Framer Motion
+- **Icons**: Lucide React
+- **Font**: Inter & Poppins (Google Fonts)
+
+## 📁 Project Structure
+
+```
+figenie-web/
+├── src/
+│   ├── app/                # Next.js app directory
+│   │   ├── layout.tsx      # Root layout with metadata
+│   │   ├── page.tsx        # Landing page
+│   │   └── globals.css     # Global styles
+│   ├── components/
+│   │   ├── common/         # Reusable components (Button, GlassCard)
+│   │   ├── effects/        # Visual effects (ParticleBackground)
+│   │   ├── layout/         # Layout components (Header, Footer)
+│   │   └── sections/       # Page sections (Hero, Features)
+│   ├── data/               # Mock data (easily removable)
+│   ├── lib/                # Utilities and animations
+│   └── types/              # TypeScript type definitions
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 16+ 
+- npm or yarn
+
+### Installation
+
+1. Navigate to the project directory:
+```bash
+cd figenie-web
+```
+
+2. Install dependencies:
+```bash
+npm install
+# or
+yarn install
+```
+
+3. Run the development server:
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🎨 Design System
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Colors
+- **Primary**: Electric Blue (#00D4FF)
+- **Secondary**: Purple Gradient (#6B46F2 → #9945FF)
+- **Success**: Mint Green (#00FF88)
+- **Background**: Deep Navy (#0A0B0F)
 
-## Learn More
+### Components
+- **Glass Cards**: Semi-transparent with backdrop blur
+- **Gradient Buttons**: Primary and secondary variants
+- **Floating Particles**: Animated background effects
+- **Responsive Navigation**: Desktop and mobile variants
 
-To learn more about Next.js, take a look at the following resources:
+## 📝 Customization
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Changing Brand Name
+Update `FiGenie` references in:
+- `src/components/layout/Header.tsx`
+- `src/components/layout/Footer.tsx`
+- `src/app/layout.tsx` (metadata)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Modifying Colors
+Edit the color palette in `tailwind.config.ts`
 
-## Deploy on Vercel
+### Adding New Sections
+1. Create a new component in `src/components/sections/`
+2. Import and add to `src/app/page.tsx`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Removing Mock Data
+Simply delete the `src/data/` directory and remove any imports
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🏗️ Building for Production
+
+```bash
+npm run build
+# or
+yarn build
+```
+
+## 📄 License
+
+This project is open source and available under the MIT License.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+
+Built with ❤️ for the future of AI-powered finance
