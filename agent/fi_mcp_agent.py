@@ -37,13 +37,14 @@ class FiMcpAgent:
         # Initialize MCP client
         self.mcp_client = MCPClient(mcp_server_url, phone_number)
         
-        # Initialize Vertex AI model
+        # Initialize Vertex AI model with system instruction
         self.model = ChatVertexAI(
             model_name="gemini-1.5-flash",
             project=project_id,
             location=location,
             temperature=0.1,
             max_output_tokens=2048,
+            system_instruction=get_fi_mcp_system_prompt()
         )
         
         # Create MCP tools
@@ -55,14 +56,10 @@ class FiMcpAgent:
     def _create_agent(self):
         """Create the LangGraph ReAct agent."""
         
-        # Get the system prompt from prompts module
-        system_message = get_fi_mcp_system_prompt()
-        
-        # Create the ReAct agent with tools
+        # Create the ReAct agent with tools (system instruction is in the model)
         agent = create_react_agent(
             model=self.model,
-            tools=self.tools,
-            state_modifier=system_message
+            tools=self.tools
         )
         
         return agent
@@ -78,8 +75,19 @@ class FiMcpAgent:
             Dict containing the response and metadata
         """
         try:
+            # Enhance user input with format reminder for structured responses
+            enhanced_input = f"""Please provide a structured financial analysis with:
+1. **Executive Summary** (2-3 sentences)
+2. **Detailed Analysis** (with specific numbers and breakdown)
+3. **Risk Assessment** (identify concerns or positive indicators)
+4. **Recommendations** (actionable advice)
+5. **Next Steps** (follow-up actions)
+6. **Educational Note** (brief financial concept explanation)
+
+User Query: {user_input}"""
+            
             # Create the input message
-            messages = [HumanMessage(content=user_input)]
+            messages = [HumanMessage(content=enhanced_input)]
             
             # Run the agent
             result = self.agent.invoke({"messages": messages})
