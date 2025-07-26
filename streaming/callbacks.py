@@ -304,14 +304,19 @@ class StreamingCallbackHandler(AsyncCallbackHandler):
         **kwargs: Any,
     ) -> None:
         """Handle chain start event (includes agent start)."""
-        # Better chain name extraction
-        chain_name = (
-            serialized.get("name") or 
-            (serialized.get("id", ["unknown"])[-1] if isinstance(serialized.get("id"), list) else serialized.get("id")) or
-            serialized.get("graph", {}).get("name") or
-            serialized.get("class_name") or
-            "unknown"
-        )
+        # Better chain name extraction with safer null handling
+        chain_name = "unknown"
+        if serialized.get("name"):
+            chain_name = serialized.get("name")
+        elif serialized.get("id"):
+            if isinstance(serialized.get("id"), list):
+                chain_name = serialized.get("id")[-1]
+            else:
+                chain_name = serialized.get("id")
+        elif serialized.get("graph") and serialized.get("graph").get("name"):
+            chain_name = serialized.get("graph").get("name")
+        elif serialized.get("class_name"):
+            chain_name = serialized.get("class_name")
         
         # Filter out internal LangGraph operations
         internal_chains = {

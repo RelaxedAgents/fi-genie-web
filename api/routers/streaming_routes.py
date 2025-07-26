@@ -1,13 +1,17 @@
-"""Streaming API routes for Financial MCP Agent."""
+"""Streaming API routes for FinanceGenie Agent."""
 
 import json
+import logging
 from typing import AsyncIterator
-from fastapi import APIRouter, HTTPException, Header, Query
+from fastapi import APIRouter, HTTPException, Header, Query, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from agent.streaming_agent import StreamingFiMcpAgent
+from agent.streaming_agent import StreamingFinanceGenieAgent
 from config.settings import settings
+from services.perplexity_service import PerplexityService
+
+logger = logging.getLogger(__name__)
 
 
 router = APIRouter(prefix="/agent/stream", tags=["Streaming"])
@@ -18,21 +22,24 @@ class StreamQueryRequest(BaseModel):
     query: str
 
 
-def create_streaming_agent(phone_number: str) -> StreamingFiMcpAgent:
-    """Create a Streaming Financial MCP Agent instance for a specific phone number."""
+def create_streaming_agent(phone_number: str, perplexity_service=None) -> StreamingFinanceGenieAgent:
+    """Create a Streaming FinanceGenie Agent instance for a specific phone number."""
     try:
-        agent = StreamingFiMcpAgent(
+        logger.info(f"Creating StreamingFinanceGenieAgent for phone: {phone_number}")
+        agent = StreamingFinanceGenieAgent(
             project_id=settings.project_id,
             location=settings.location,
             mcp_server_url=settings.mcp_server_url,
-            phone_number=phone_number
+            phone_number=phone_number,
+            perplexity_service=perplexity_service
         )
         return agent
     except Exception as e:
+        logger.error(f"Error creating StreamingFinanceGenieAgent: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error creating Streaming Agent: {str(e)}")
 
 
-async def generate_sse_events(agent: StreamingFiMcpAgent, query: str) -> AsyncIterator[str]:
+async def generate_sse_events(agent: StreamingFinanceGenieAgent, query: str) -> AsyncIterator[str]:
     """
     Generate Server-Sent Events from agent streaming.
     
@@ -62,7 +69,7 @@ async def generate_sse_events(agent: StreamingFiMcpAgent, query: str) -> AsyncIt
         yield f"data: {json.dumps(error_data)}\n\n"
 
 
-async def generate_sse_native_events(agent: StreamingFiMcpAgent, query: str) -> AsyncIterator[str]:
+async def generate_sse_native_events(agent: StreamingFinanceGenieAgent, query: str) -> AsyncIterator[str]:
     """
     Generate Server-Sent Events using LangGraph's native streaming.
     
@@ -95,6 +102,7 @@ async def generate_sse_native_events(agent: StreamingFiMcpAgent, query: str) -> 
 @router.post("/query")
 async def stream_agent_query(
     request: StreamQueryRequest,
+    request_obj: Request,
     x_phone_number: str = Header(..., alias="X-Phone-Number")
 ):
     """
@@ -107,8 +115,12 @@ async def stream_agent_query(
         StreamingResponse with SSE content type
     """
     try:
+        # Get Perplexity service from app state if available
+        app_state = getattr(request_obj.app.state, "app_state", {})
+        perplexity_service = app_state.get("services", {}).get("perplexity")
+        
         # Create streaming agent instance
-        agent = create_streaming_agent(x_phone_number)
+        agent = create_streaming_agent(x_phone_number, perplexity_service)
         
         # Return streaming response
         return StreamingResponse(
@@ -127,8 +139,9 @@ async def stream_agent_query(
 
 @router.get("/query")
 async def stream_agent_query_get(
-    query: str = Query(..., description="The financial query to process"),
-    x_phone_number: str = Header(..., alias="X-Phone-Number")
+    request_obj: Request,
+    x_phone_number: str = Header(..., alias="X-Phone-Number"),
+    query: str = Query(..., description="The financial query to process")
 ):
     """
     Stream agent responses using GET request with query parameter.
@@ -139,8 +152,12 @@ async def stream_agent_query_get(
         StreamingResponse with SSE content type
     """
     try:
+        # Get Perplexity service from app state if available
+        app_state = getattr(request_obj.app.state, "app_state", {})
+        perplexity_service = app_state.get("services", {}).get("perplexity")
+        
         # Create streaming agent instance
-        agent = create_streaming_agent(x_phone_number)
+        agent = create_streaming_agent(x_phone_number, perplexity_service)
         
         # Return streaming response
         return StreamingResponse(
@@ -160,6 +177,7 @@ async def stream_agent_query_get(
 @router.post("/query/native")
 async def stream_agent_query_native(
     request: StreamQueryRequest,
+    request_obj: Request,
     x_phone_number: str = Header(..., alias="X-Phone-Number")
 ):
     """
@@ -171,8 +189,12 @@ async def stream_agent_query_native(
         StreamingResponse with SSE content type
     """
     try:
+        # Get Perplexity service from app state if available
+        app_state = getattr(request_obj.app.state, "app_state", {})
+        perplexity_service = app_state.get("services", {}).get("perplexity")
+        
         # Create streaming agent instance
-        agent = create_streaming_agent(x_phone_number)
+        agent = create_streaming_agent(x_phone_number, perplexity_service)
         
         # Return streaming response
         return StreamingResponse(

@@ -1,15 +1,20 @@
 """Financial AI Assistant Agents."""
 
 from .base_agent import BaseStreamableAgent
-from .orchestrator_agent import OrchestratorAgent
-from .financial_data_agent import FinancialDataAgent
-from .market_research_agent import MarketResearchAgent
-from .advisory_agent import AdvisoryAgent
+from .fi_mcp_agent import FiMcpAgent
+from .finance_genie_agent import FinanceGenieAgent
+from .streaming_agent import StreamingFinanceGenieAgent, CustomStreamingFinanceGenieAgent
+
+# Note: Multi-agent system is deprecated, but still available in multi_agent directory
+# from .multi_agent.orchestrator_agent import OrchestratorAgent
+# from .multi_agent.financial_data_agent import FinancialDataAgent
+# from .multi_agent.market_research_agent import MarketResearchAgent
+# from .multi_agent.advisory_agent import AdvisoryAgent
 
 __all__ = [
     'BaseStreamableAgent',
-    'OrchestratorAgent',
-    'FinancialDataAgent',
-    'MarketResearchAgent',
-    'AdvisoryAgent'
+    'FiMcpAgent',
+    'FinanceGenieAgent',
+    'StreamingFinanceGenieAgent',
+    'CustomStreamingFinanceGenieAgent'
 ]

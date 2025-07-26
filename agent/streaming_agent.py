@@ -1,13 +1,14 @@
-"""Streaming-enabled Financial MCP Agent using decorator approach."""
+"""Streaming-enabled FinanceGenie Agent using decorator approach."""
 
 from streaming import streamable_financial
-from .fi_mcp_agent import FiMcpAgent
+from .finance_genie_agent import FinanceGenieAgent
+from prompts.streamable_fi_mcp_prompts import ENHANCED_INPUT_FORMAT
 
 
-# Create a streaming-enabled version of FiMcpAgent using the decorator
+# Create a streaming-enabled version of FinanceGenieAgent using the decorator
 @streamable_financial
-class StreamingFiMcpAgent(FiMcpAgent):
-    """Financial MCP Agent with streaming capabilities using decorator approach."""
+class StreamingFinanceGenieAgent(FinanceGenieAgent):
+    """FinanceGenie Agent with streaming capabilities using decorator approach."""
     
     def enhance_input(self, user_input: str) -> str:
         """
@@ -15,15 +16,18 @@ class StreamingFiMcpAgent(FiMcpAgent):
         
         This method is automatically detected by the StreamingMixin.
         """
-        return f"""Please provide a structured financial analysis with:
-1. **Executive Summary** (2-3 sentences)
-2. **Detailed Analysis** (with specific numbers and breakdown)
-3. **Risk Assessment** (identify concerns or positive indicators)
-4. **Recommendations** (actionable advice)
-5. **Next Steps** (follow-up actions)
-6. **Educational Note** (brief financial concept explanation)
-
-User Query: {user_input}"""
+        return ENHANCED_INPUT_FORMAT.format(user_input=user_input)
+    
+    @property
+    def model(self):
+        """
+        Expose the model attribute required by StreamingMixin.
+        
+        The StreamingMixin expects a 'model' attribute, but FiMcpAgent
+        uses the LangGraph agent directly. This property bridges that gap.
+        """
+        # Get the model from the gemini_service
+        return self.gemini_service.get_model()
 
 
 # Alternative: Use the decorator with custom configuration
@@ -45,8 +49,8 @@ from streaming import make_streamable, StreamingConfig
     enable_progress_tracking=True,
     enable_tool_tracking=True
 ))
-class CustomStreamingFinancialAgent(FiMcpAgent):
-    """Financial agent with custom streaming configuration."""
+class CustomStreamingFinanceGenieAgent(FinanceGenieAgent):
+    """FinanceGenie agent with custom streaming configuration."""
     pass
 
 # Example: Converting an existing agent instance to be streamable
@@ -55,7 +59,7 @@ def make_agent_streamable(agent_instance):
     Example function showing how to add streaming to an existing agent instance.
     
     Args:
-        agent_instance: An instance of FiMcpAgent or similar
+        agent_instance: An instance of FinanceGenieAgent or similar
         
     Returns:
         The same instance with streaming capabilities added

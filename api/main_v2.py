@@ -1,4 +1,11 @@
-"""Main FastAPI application for Financial AI Assistant."""
+"""Main FastAPI application for Financial AI Assistant.
+
+DEPRECATED: This version is deprecated. Please use api/main.py instead.
+"""
+
+# ############################################################################
+# # DEPRECATED: This file is deprecated. Please use api/main.py instead.     #
+# ############################################################################
 
 # CRITICAL: Disable SSL verification BEFORE any imports
 import os
@@ -31,7 +38,8 @@ import asyncio
 
 from config.settings import settings
 from services.gemini_service import GeminiService
-from services import PerplexityService, MCPClient
+from services.perplexity_service import PerplexityService
+from services import MCPClient
 from memory import MemoryManager
 from agent import (
     OrchestratorAgent,
@@ -104,6 +112,7 @@ async def lifespan(app: FastAPI):
         perplexity_service = PerplexityService(
             api_key=os.getenv("PERPLEXITY_API_KEY")
         )
+        logger.info("Initialized Perplexity service")
         
         # Initialize agents with custom temperatures if specified
         logger.info("Initializing agents...")
@@ -164,6 +173,9 @@ async def lifespan(app: FastAPI):
                 "advisory": advisory_agent
             }
         })
+        
+        # Make perplexity_service available for FiMcpAgent
+        app.state.perplexity_service = perplexity_service
         
         logger.info("Financial AI Assistant initialized successfully!")
         

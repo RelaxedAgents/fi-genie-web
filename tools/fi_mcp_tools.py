@@ -22,9 +22,18 @@ class NetWorthTool(BaseTool):
     def _run(self, **kwargs) -> str:
         """Execute the net worth fetch tool."""
         try:
+            import logging
+            logger = logging.getLogger(__name__)
+            
+            logger.info("Calling MCP tool: fetch_net_worth")
             result = self.mcp_client.call_tool("fetch_net_worth", {})
+            logger.info(f"Received net worth data from MCP server: {str(result)[:100]}...")
+            
             return str(result)
         except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error fetching net worth: {str(e)}")
             return f"Error fetching net worth: {str(e)}"
 
 

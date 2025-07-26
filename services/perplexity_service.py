@@ -68,44 +68,40 @@ class PerplexityService:
         Returns:
             Search results from Perplexity
         """
-        # Prepare the request payload
+        # Prepare the request payload exactly as in the working curl command
         payload = {
-            "model": self.model,
+            "model": "sonar-pro",  # Use the model that works with the API
             "messages": [
-                {
-                    "role": "system",
-                    "content": "You are a helpful financial research assistant. Focus on providing accurate, recent financial and market information."
-                },
                 {
                     "role": "user",
                     "content": query
                 }
             ],
-            "max_tokens": self.max_tokens,
-            "temperature": self.temperature,
-            "top_p": top_p if top_p is not None else float(os.getenv("PERPLEXITY_TOP_P", "0.9")),
+            "max_tokens": 500,
+            "temperature": 0.1,
             "return_citations": return_citations,
-            "search_domain_filter": search_domain_filter,
-            "return_images": return_images,
-            "return_related_questions": return_related_questions,
-            "search_recency_filter": search_recency_filter,
-            "presence_penalty": presence_penalty if presence_penalty is not None else float(os.getenv("PERPLEXITY_PRESENCE_PENALTY", "0")),
-            "frequency_penalty": frequency_penalty if frequency_penalty is not None else float(os.getenv("PERPLEXITY_FREQUENCY_PENALTY", "1")),
-            "stream": stream
+            "return_related_questions": return_related_questions
         }
         
-        # Remove None values
-        payload = {k: v for k, v in payload.items() if v is not None}
+        # Add optional parameters if provided
+        if search_recency_filter:
+            # Add a note about recency in the query itself
+            payload["messages"][0]["content"] += f" (focusing on information from the past {search_recency_filter})"
+        
+        logger.info(f"Sending direct request to Perplexity API with query: {query[:100]}...")
+        logger.debug(f"Full payload: {payload}")
         
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(
-                    f"{self.base_url}/chat/completions",
+                    "https://api.perplexity.ai/chat/completions",
                     headers=self.headers,
                     json=payload
                 ) as response:
                     response.raise_for_status()
                     result = await response.json()
+                    
+                    logger.info(f"Received response from Perplexity API: status={response.status}")
                     
                     # Extract the response
                     if result.get("choices"):
@@ -115,7 +111,6 @@ class PerplexityService:
                         formatted_result = {
                             "content": content,
                             "citations": result.get("citations", []),
-                            "images": result.get("images", []),
                             "related_questions": result.get("related_questions", []),
                             "usage": result.get("usage", {})
                         }

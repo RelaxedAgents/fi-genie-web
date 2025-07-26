@@ -65,7 +65,7 @@ class MemoryManager:
             self.mem0_client.search_memories(
                 query="financial goals preferences risk tolerance",
                 user_id=user_id,
-                agent_id=agent_id,
+                # agent_id=agent_id,  # Removed - causes Neo4j syntax error
                 limit=10
             ),
             self.mem0_client.search_memories(
@@ -76,7 +76,7 @@ class MemoryManager:
             ),
             self.mem0_client.get_memories(
                 user_id=user_id,
-                agent_id=agent_id,
+                # agent_id=agent_id,  # Removed - causes issues with agent filtering
                 limit=10
             )
         ]
@@ -229,21 +229,18 @@ class MemoryManager:
                 {"role": "assistant", "content": response}
             ]
             
-            # Convert datetime objects to strings for JSON serialization
-            interaction_dict = interaction.dict(exclude={'query', 'response', 'user_id', 'agent_id'})
-            # Convert datetime fields to ISO format strings
-            for key, value in interaction_dict.items():
-                if isinstance(value, datetime):
-                    interaction_dict[key] = value.isoformat()
-            
+            # Simplified metadata without datetime objects to avoid JSON serialization errors
             await self.mem0_client.create_memory(
                 messages=messages,
                 user_id=user_id,
-                agent_id=agent_id,
+                # agent_id=agent_id,  # Removed - causes issues with agent filtering
                 metadata={
                     "type": "interaction",
                     "session_id": session_id,
-                    **interaction_dict
+                    "agents_involved": metadata.get('agents_used', [agent_id]) if metadata else [agent_id],
+                    "execution_type": metadata.get('execution_type', 'sequential') if metadata else 'sequential',
+                    "tools_used": metadata.get('tools_used', []) if metadata else []
+                    # No datetime fields to avoid JSON serialization errors
                 }
             )
             
@@ -283,10 +280,11 @@ class MemoryManager:
                         "content": f"Insight from {insight.source_agent}: {insight.content}"
                     }],
                     user_id=insight.user_id,
-                    agent_id=target_agent,
+                    # agent_id=target_agent,  # Removed - causes issues with agent filtering
                     metadata={
                         "type": "shared_insight",
                         "source": insight.source_agent,
+                        "target_agent": target_agent,
                         "insight_type": insight.insight_type,
                         "confidence": insight.confidence,
                         **insight.metadata
@@ -336,9 +334,10 @@ class MemoryManager:
                     "content": f"Detected {pattern.pattern_type} pattern: {pattern.description}"
                 }],
                 user_id=user_id,
-                agent_id=agent_id,
+                # agent_id=agent_id,  # Removed - causes issues with agent filtering
                 metadata={
                     "type": "pattern",
+                    "source_agent": agent_id,
                     "pattern": pattern.dict()
                 }
             )
@@ -385,7 +384,7 @@ class MemoryManager:
         memories = await self.mem0_client.search_memories(
             query=query,
             user_id=user_id,
-            agent_id=agent_id,
+            # agent_id=agent_id,  # Removed - causes Neo4j syntax error
             limit=20
         )
         
@@ -428,7 +427,7 @@ class MemoryManager:
         """
         return await self.mem0_client.get_memories(
             user_id=user_id,
-            agent_id=agent_id,
+            # agent_id=agent_id,  # Removed - causes issues with agent filtering
             limit=limit
         )
     

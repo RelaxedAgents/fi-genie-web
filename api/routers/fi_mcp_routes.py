@@ -1,12 +1,16 @@
 """Financial MCP Agent API routes."""
 
 from typing import Dict, Any
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Request
 from pydantic import BaseModel
 import vertexai
+import logging
 
-from agent.fi_mcp_agent import FiMcpAgent
+from agent.finance_genie_agent import FinanceGenieAgent
 from config.settings import settings
+from services.perplexity_service import PerplexityService
+
+logger = logging.getLogger(__name__)
 
 
 # Initialize Vertex AI
@@ -24,26 +28,33 @@ class QueryRequest(BaseModel):
     query: str
 
 
-def create_fi_mcp_agent(phone_number: str) -> FiMcpAgent:
-    """Create a Financial MCP Agent instance for a specific phone number."""
+def create_fi_mcp_agent(phone_number: str, perplexity_service=None) -> FinanceGenieAgent:
+    """Create a FinanceGenie Agent instance for a specific phone number."""
     try:
-        agent = FiMcpAgent(
+        logger.info(f"Creating FinanceGenie agent for phone: {phone_number}")
+        agent = FinanceGenieAgent(
             project_id=settings.project_id,
             location=settings.location,
             mcp_server_url=settings.mcp_server_url,
-            phone_number=phone_number
+            phone_number=phone_number,
+            perplexity_service=perplexity_service
         )
         return agent
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error creating Financial Agent: {str(e)}")
+        logger.error(f"Error creating FinanceGenie Agent: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error creating FinanceGenie Agent: {str(e)}")
 
 
 @router.get("/tools")
-async def get_tools():
+async def get_tools(request: Request):
     """Get list of available financial tools."""
     try:
+        # Get Perplexity service from app state if available
+        app_state = getattr(request.app.state, "app_state", {})
+        perplexity_service = app_state.get("services", {}).get("perplexity")
+        
         # Create a temporary agent instance to get tools list
-        temp_agent = create_fi_mcp_agent("0000000000")  # dummy phone for tools list
+        temp_agent = create_fi_mcp_agent("0000000000", perplexity_service)  # dummy phone for tools list
         tools = temp_agent.get_available_tools()
         return {
             "tools": tools,
@@ -55,16 +66,21 @@ async def get_tools():
 
 @router.post("/query")
 async def agent_query(
-    request: QueryRequest,
+    request_body: QueryRequest,
+    request: Request,
     x_phone_number: str = Header(..., alias="X-Phone-Number")
 ):
     """Main agent query endpoint."""
     try:
-        # Create agent instance for this phone number
-        agent = create_fi_mcp_agent(x_phone_number)
+        # Get Perplexity service from app state if available
+        app_state = getattr(request.app.state, "app_state", {})
+        perplexity_service = app_state.get("services", {}).get("perplexity")
         
-        # Process the query
-        result = agent.query(request.query)
+        # Create agent instance for this phone number
+        agent = create_fi_mcp_agent(x_phone_number, perplexity_service)
+        
+        # Process the query - await the async method
+        result = await agent.query(request_body.query)
         
         return result
         
@@ -75,12 +91,17 @@ async def agent_query(
 @router.post("/tool/{tool_name}")
 async def direct_tool_call(
     tool_name: str,
+    request: Request,
     x_phone_number: str = Header(..., alias="X-Phone-Number")
 ):
     """Direct tool execution endpoint."""
     try:
+        # Get Perplexity service from app state if available
+        app_state = getattr(request.app.state, "app_state", {})
+        perplexity_service = app_state.get("services", {}).get("perplexity")
+        
         # Create agent instance for this phone number
-        agent = create_fi_mcp_agent(x_phone_number)
+        agent = create_fi_mcp_agent(x_phone_number, perplexity_service)
         
         # Check if tool exists
         available_tools = [tool.name for tool in agent.tools]
@@ -92,7 +113,7 @@ async def direct_tool_call(
         
         # Execute the tool directly via MCP client
         try:
-            result = agent.mcp_client.call_tool(tool_name, {})
+            result = await agent.call_tool(tool_name, {})
             return {
                 "tool": tool_name,
                 "result": result,

@@ -1,20 +1,37 @@
 """FastAPI application for Financial MCP Agent."""
 
 import os
+import logging
 from typing import Dict, Any
 from fastapi import FastAPI, HTTPException
 import vertexai
 
-from agent.fi_mcp_agent import FiMcpAgent
+# Ensure dotenv is loaded
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    print("API: Loaded environment variables from .env file")
+except ImportError:
+    print("API: python-dotenv not installed, using environment variables as is")
+
+from agent.finance_genie_agent import FinanceGenieAgent
 from config.settings import settings
 from api.routers.fi_mcp_routes import router as fi_mcp_router
 from api.routers.streaming_routes import router as streaming_router
+from services.perplexity_service import PerplexityService, create_perplexity_service
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Financial MCP Agent API",  
-    description="AI-powered financial data access and analysis using LangGraph and MCP",
+    title="FinanceGenie API",  
+    description="AI-powered financial intelligence using LangGraph and MCP",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
@@ -22,19 +39,49 @@ app = FastAPI(
 
 # Initialize Vertex AI
 try:
-    vertexai.init(
-        project=settings.project_id,
-        location=settings.location,
-        staging_bucket=settings.staging_bucket,
-    )
-    print(f"Vertex AI initialized successfully for project: {settings.project_id}")
-    print(f"Location: {settings.location}")
-    print(f"Staging bucket: {settings.staging_bucket}")
-    print(f"MCP Server URL: {settings.mcp_server_url}")
-    print("Financial Agent will be created per request with phone number from headers")
+    # Check if we're using direct API or Vertex AI
+    provider = os.getenv("GEMINI_PROVIDER", "vertex")
+    
+    if provider == "vertex":
+        vertexai.init(
+            project=settings.project_id,
+            location=settings.location,
+            staging_bucket=settings.staging_bucket,
+        )
+        logger.info(f"Vertex AI initialized successfully for project: {settings.project_id}")
+        logger.info(f"Location: {settings.location}")
+        logger.info(f"Staging bucket: {settings.staging_bucket}")
+        logger.info(f"Using Vertex AI model: {os.getenv('GEMINI_MODEL_VERTEX', 'gemini-2.5-pro')}")
+    else:
+        logger.info(f"Using Direct Gemini API with model: {os.getenv('GEMINI_MODEL_DIRECT', 'gemini-2.5-pro')}")
+    
+    logger.info(f"MCP Server URL: {settings.mcp_server_url}")
+    logger.info("Financial Agent will be created per request with phone number from headers")
 except Exception as e:
-    print(f"Error initializing Vertex AI: {str(e)}")
+    logger.error(f"Error initializing AI services: {str(e)}")
     raise
+
+# Initialize Perplexity service
+perplexity_service = None
+try:
+    api_key = os.getenv("PERPLEXITY_API_KEY")
+    if api_key:
+        perplexity_service = create_perplexity_service(api_key=api_key)
+        logger.info(f"Perplexity service initialized successfully")
+        logger.info(f"Using Perplexity model: {os.getenv('PERPLEXITY_MODEL', 'llama-3.1-sonar-large-128k-online')}")
+    else:
+        logger.warning("PERPLEXITY_API_KEY not found in environment variables")
+except Exception as e:
+    logger.warning(f"Perplexity service initialization failed: {str(e)}")
+    perplexity_service = None
+
+# Store services in app state for access by routes
+app.state.app_state = {
+    "services": {
+        "perplexity": perplexity_service
+    }
+}
+logger.info("Services stored in app state")
 
 
 # Include routers
@@ -47,11 +94,12 @@ async def health_check():
     """Health check endpoint for the agent."""
     try:
         # Create a temporary agent instance for health check
-        temp_agent = FiMcpAgent(
+        temp_agent = FinanceGenieAgent(
             project_id=settings.project_id,
             location=settings.location,
             mcp_server_url=settings.mcp_server_url,
-            phone_number="0000000000"  # dummy phone for health check
+            phone_number="0000000000",  # dummy phone for health check
+            perplexity_service=perplexity_service  # Add Perplexity service
         )
         
         health_status = temp_agent.health_check()
@@ -70,7 +118,7 @@ async def health_check():
 async def root():
     """Root endpoint with API information."""
     return {
-        "message": "Financial MCP Agent API",
+        "message": "FinanceGenie API",
         "version": "1.0.0",
         "docs": "/docs",
         "health": "/health",
