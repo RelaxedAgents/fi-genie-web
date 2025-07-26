@@ -18,3 +18,7 @@ langchain
 # Additional dependencies
 requests
 pydantic
+
+# Transform Service Dependencies
+google-generativeai
+google-cloud-aiplatform
