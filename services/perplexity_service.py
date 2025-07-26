@@ -115,7 +115,7 @@ class PerplexityService:
                             "usage": result.get("usage", {})
                         }
                         
-                        logger.info(f"Perplexity search completed for query: {query[:50]}...")
+                        logger.info(f"Perplexity search completed for query: {query}...result-{formatted_result}")
                         return formatted_result
                     else:
                         logger.error("No choices in Perplexity response")

@@ -284,7 +284,14 @@ class FinanceGenieAgent:
             self.logger.info(f"Starting streaming query: {query[:50]}...")
             yield {"type": "stream_start", "content": "Starting your financial analysis...", "timestamp": datetime.utcnow().isoformat()}
             
-            async for event in self.agent.astream_events({"messages": [{"role": "user", "content": query}]}, version="v1"):
+            # Ensure system prompt is included in the messages
+            system_prompt = get_finance_genie_system_prompt()
+            messages = [
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=query)
+            ]
+            
+            async for event in self.agent.astream_events({"messages": messages}, version="v1"):
                 event_count += 1
                 event_type = event.get("event", "unknown")
                 
@@ -345,10 +352,17 @@ class FinanceGenieAgent:
             
             self.logger.info(f"Processed {event_count} events, {llm_events_seen} LLM events, buffer length: {len(response_buffer)}")
             
-            # 4. Final Response (From accumulated LLM tokens or fallback)
+            # 4. Final Response (Clean LLM response only, no duplication)
             if response_buffer.strip():
-                self.logger.info(f"Final analysis generated with {len(response_buffer)} characters")
-                yield {"type": "final_analysis", "content": response_buffer.strip(), "timestamp": datetime.utcnow().isoformat()}
+                # Clean the response buffer - remove any query duplication
+                clean_response = response_buffer.strip()
+                
+                # Remove query duplication if it exists at the beginning
+                if clean_response.startswith(query):
+                    clean_response = clean_response[len(query):].strip()
+                
+                self.logger.info(f"Final analysis generated with {len(clean_response)} characters")
+                yield {"type": "final_analysis", "content": clean_response, "timestamp": datetime.utcnow().isoformat()}
             else:
                 self.logger.warning("No response content accumulated - this indicates a streaming issue")
                 # Provide a more helpful error message
