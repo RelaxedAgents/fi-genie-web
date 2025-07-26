@@ -104,3 +104,15 @@ export const updateUserProfile = (username: string, avatar: string): void => {
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userData));
   }
 };
+
+// Logout user
+export const logout = (): void => {
+  clearAuth();
+};
+
+// Get avatar by ID
+export const getAvatarById = (avatarId: string) => {
+  // Import avatars from data
+  const { avatars } = require('@/data/avatars');
+  return avatars.find((avatar: any) => avatar.id === avatarId) || null;
+};

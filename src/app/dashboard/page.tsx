@@ -1,53 +1,126 @@
 "use client"
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
-import { Brain } from "lucide-react"
-import { getCurrentUser } from "@/lib/auth"
-import { ParticleBackground } from "@/components/effects/ParticleBackground"
+import React, { useState, useEffect } from "react"
+import { DashboardLayout } from "@/components/dashboard/DashboardLayout"
+import { FinancialHealthScore } from "@/components/dashboard/FinancialHealthScore"
+import { CreditShield } from "@/components/dashboard/CreditShield"
+import { WealthTree } from "@/components/dashboard/WealthTree"
+import { CashFlowRiver } from "@/components/dashboard/CashFlowRiver"
+import { AssetAllocation } from "@/components/dashboard/AssetAllocation"
+import { GrowthTrends } from "@/components/dashboard/GrowthTrends"
+import { motion, Variants } from "framer-motion"
+import creditData from "@/../../ResponseJson/creditResponse.json"
 
 export default function DashboardPage() {
-  const router = useRouter()
+  const [data, setData] = useState(creditData)
+  const [selectedInsight, setSelectedInsight] = useState<string | null>(null)
 
-  useEffect(() => {
-    const user = getCurrentUser()
-    if (!user) {
-      router.push("/auth/login")
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
     }
-  }, [router])
+  }
+
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut" as const
+      }
+    }
+  }
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center">
-      <ParticleBackground />
-      
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        className="relative z-10 text-center"
+    <DashboardLayout>
+      <motion.div 
+        className="relative h-[calc(100vh-5rem)] p-2 overflow-hidden flex flex-col gap-2"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
       >
-        <div className="flex justify-center mb-8">
-          <div className="relative">
-            <Brain className="w-20 h-20 text-primary" />
-            <div className="absolute inset-0 bg-primary/20 blur-xl" />
-          </div>
-        </div>
-        
-        <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">
-          Welcome to <span className="gradient-text">FiGenie</span>
-        </h1>
-        
-        <p className="text-xl text-gray-400 mb-8">
-          Your dashboard is being prepared...
-        </p>
-        
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-          className="mx-auto w-12 h-12 border-4 border-primary border-t-transparent rounded-full"
-        />
+        {/* Top Row: Financial Health Score + Main Metrics */}
+        <motion.div 
+          className="grid grid-cols-4 gap-3 h-[calc(40%-4px)]"
+          variants={containerVariants}
+        >
+          {/* Financial Health Score - Left */}
+          <motion.div variants={itemVariants} className="relative">
+            <FinancialHealthScore 
+              score={data.financialOverview.financialHealthScore.overall}
+              components={data.financialOverview.financialHealthScore.components}
+              status={data.financialOverview.financialHealthScore.status}
+              insight={data.aiGeneratedInsights.overallProfile}
+            />
+          </motion.div>
+
+          {/* Credit Shield */}
+          <motion.div variants={itemVariants} className="relative">
+            <CreditShield 
+              score={data.financialOverview.creditScore.score}
+              maxScore={data.financialOverview.creditScore.maxScore}
+              rating={data.financialOverview.creditScore.rating}
+              paymentHistory={data.creditReport.paymentHistory}
+              historicalData={data.historicalData.creditScore}
+              insight={data.aiGeneratedInsights.creditInsights[0]}
+            />
+          </motion.div>
+
+          {/* Wealth Tree */}
+          <motion.div variants={itemVariants} className="relative">
+            <WealthTree 
+              netWorth={data.financialOverview.netWorth.total}
+              assetBreakdown={data.wealthProfile.assetBreakdown}
+              monthlyGrowth={data.financialOverview.netWorth.monthlyGrowth}
+              historicalData={data.historicalData.netWorth}
+              insight={data.aiGeneratedInsights.netWorthInsights[0]}
+            />
+          </motion.div>
+
+          {/* Cash Flow River */}
+          <motion.div variants={itemVariants} className="relative">
+            <CashFlowRiver 
+              monthlyData={data.monthlyFinancialSnapshot}
+              historicalData={data.historicalData.monthlyCashFlow}
+              savingsRate={data.monthlyFinancialSnapshot.savingsRate}
+              insight={data.aiGeneratedInsights.netWorthInsights[1]}
+            />
+          </motion.div>
+        </motion.div>
+
+        {/* Bottom Row: Asset Allocation + Growth Trends */}
+        <motion.div 
+          className="grid grid-cols-2 gap-3 h-[calc(60%-4px)]"
+          variants={containerVariants}
+        >
+          {/* Asset Allocation */}
+          <motion.div variants={itemVariants} className="relative h-full">
+            <AssetAllocation 
+              assets={data.wealthProfile.assetBreakdown}
+              totalValue={data.financialOverview.netWorth.totalAssets}
+              insight={data.aiGeneratedInsights.netWorthInsights[2]}
+            />
+          </motion.div>
+
+          {/* Growth Trends */}
+          <motion.div variants={itemVariants} className="relative h-full">
+            <GrowthTrends 
+              netWorthHistory={data.historicalData.netWorth}
+              creditScoreHistory={data.historicalData.creditScore}
+              cashFlowHistory={data.historicalData.monthlyCashFlow}
+              insight={data.aiGeneratedInsights.creditInsights[1]}
+            />
+          </motion.div>
+        </motion.div>
+
       </motion.div>
-    </div>
+    </DashboardLayout>
   )
 }

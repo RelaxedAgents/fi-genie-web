@@ -1,0 +1,719 @@
+{
+  "status": "success",
+  "timestamp": "2025-07-09T15:29:19Z",
+  "financialOverview": {
+    "creditScore": {
+      "score": 746,
+      "rating": "Good",
+      "ratingDescription": "Indicates a generally positive credit history. Lenders view this score favorably.",
+      "confidenceLevel": "High",
+      "trend": "Stable",
+      "color": "#FFD700",
+      "maxScore": 900,
+      "percentile": 82.9
+    },
+    "netWorth": {
+      "total": 658305.0,
+      "totalAssets": 722305.0,
+      "totalLiabilities": 64000.0,
+      "debtToAssetRatio": 8.86,
+      "monthlyGrowth": {
+        "percentage": 2.1,
+        "status": "up",
+        "trend": "positive"
+      },
+      "currency": "INR"
+    },
+    "financialHealthScore": {
+      "overall": 78,
+      "components": {
+        "creditHealth": 82,
+        "wealthAccumulation": 85,
+        "debtManagement": 65,
+        "investmentPerformance": 80
+      },
+      "status": "Good",
+      "color": "#32CD32"
+    }
+  },
+  "creditReport": {
+    "accountSummary": {
+      "totalAccounts": 6,
+      "activeAccounts": 6,
+      "defaultAccounts": 0,
+      "accountsWithBalance": 6,
+      "totalOutstandingBalance": 75000,
+      "totalCreditLimit": 500000,
+      "totalPastDue": 47000,
+      "creditUtilization": 2.2,
+      "currency": "INR",
+      "accountDistribution": {
+        "secured": 4,
+        "unsecured": 2,
+        "revolving": 1,
+        "installment": 5
+      }
+    },
+    "debtBreakdown": [
+      {
+        "type": "Secured",
+        "label": "Secured Debt",
+        "amount": 44000,
+        "percentage": 59,
+        "color": "#4682B4",
+        "accounts": ["Auto Loan", "Loan Against Shares", "Gold Loan"]
+      },
+      {
+        "type": "Unsecured",
+        "label": "Unsecured Debt",
+        "amount": 31000,
+        "percentage": 41,
+        "color": "#FFA500",
+        "accounts": ["Personal Loan", "Business Loan", "Credit Card"]
+      }
+    ],
+    "creditAccounts": [
+      {
+        "accountId": "ACC001",
+        "lender": "HDFC Bank",
+        "accountType": "Auto Loan",
+        "openDate": "2006-01-10",
+        "currentBalance": 5000,
+        "pastDueAmount": 1000,
+        "paymentRating": "121-150 DPD",
+        "interestRate": "11.50%",
+        "status": "Post (WO) Settled",
+        "statusColor": "#FF4500",
+        "riskLevel": "High",
+        "monthlyPayment": 0,
+        "originalAmount": 250000
+      },
+      {
+        "accountId": "ACC002",
+        "lender": "ICICI Bank",
+        "accountType": "Personal Loan",
+        "openDate": "2006-01-22",
+        "currentBalance": 17000,
+        "pastDueAmount": 13000,
+        "paymentRating": "Standard",
+        "interestRate": "8.24%",
+        "status": "Active",
+        "statusColor": "#FF4500",
+        "riskLevel": "High",
+        "monthlyPayment": 2500,
+        "originalAmount": 100000
+      },
+      {
+        "accountId": "ACC003",
+        "lender": "Aditya Birla Finance Limited",
+        "accountType": "Loan Against Shares",
+        "openDate": "2006-01-19",
+        "currentBalance": 14000,
+        "pastDueAmount": 10000,
+        "paymentRating": "31-60 DPD",
+        "interestRate": "14.00%",
+        "status": "Written Off",
+        "statusColor": "#FF4500",
+        "riskLevel": "Critical",
+        "monthlyPayment": 0,
+        "originalAmount": 150000
+      },
+      {
+        "accountId": "ACC004",
+        "lender": "Bajaj Finance",
+        "accountType": "Business Loan",
+        "openDate": "2006-01-13",
+        "currentBalance": 8000,
+        "pastDueAmount": 0,
+        "paymentRating": "Standard",
+        "interestRate": "N/A",
+        "status": "Active",
+        "statusColor": "#32CD32",
+        "riskLevel": "Low",
+        "monthlyPayment": 1500,
+        "originalAmount": 50000
+      },
+      {
+        "accountId": "ACC005",
+        "lender": "Epifi Capital",
+        "accountType": "Credit Card",
+        "openDate": "2006-01-16",
+        "currentBalance": 11000,
+        "pastDueAmount": 7000,
+        "paymentRating": "91-120 DPD",
+        "interestRate": "N/A",
+        "status": "Written Off and Settled",
+        "statusColor": "#FF4500",
+        "riskLevel": "Critical",
+        "monthlyPayment": 0,
+        "creditLimit": 50000
+      },
+      {
+        "accountId": "ACC006",
+        "lender": "Manappuram Finance",
+        "accountType": "Gold Loan",
+        "openDate": "2006-01-25",
+        "currentBalance": 20000,
+        "pastDueAmount": 16000,
+        "paymentRating": "1-30 DPD",
+        "interestRate": "N/A",
+        "status": "Settled",
+        "statusColor": "#FF4500",
+        "riskLevel": "High",
+        "monthlyPayment": 3000,
+        "originalAmount": 100000
+      }
+    ],
+    "recentInquiries": {
+      "summary": "4 inquiries in the last 90 days. High inquiry volume can temporarily lower the credit score.",
+      "totalLast90Days": 4,
+      "impactOnScore": -15,
+      "inquiries": [
+        {
+          "inquiryId": "INQ001",
+          "lender": "Bajaj finance",
+          "date": "2025-07-09",
+          "purpose": "Credit Card",
+          "impact": "Hard Inquiry",
+          "status": "Completed"
+        },
+        {
+          "inquiryId": "INQ002",
+          "lender": "Muthoot finance",
+          "date": "2025-07-09",
+          "purpose": "Auto Loan",
+          "impact": "Hard Inquiry",
+          "status": "Completed"
+        },
+        {
+          "inquiryId": "INQ003",
+          "lender": "HDFC",
+          "date": "2025-07-09",
+          "purpose": "Loan Against Property",
+          "impact": "Hard Inquiry",
+          "status": "Completed"
+        },
+        {
+          "inquiryId": "INQ004",
+          "lender": "SBI",
+          "date": "2025-07-09",
+          "purpose": "Housing Loan",
+          "impact": "Hard Inquiry",
+          "status": "Completed"
+        }
+      ]
+    },
+    "paymentHistory": {
+      "onTimePayments": 65,
+      "latePayments": 35,
+      "onTimePercentage": 65,
+      "paymentTrend": "Declining",
+      "last12Months": {
+        "onTime": 4,
+        "late30Days": 3,
+        "late60Days": 2,
+        "late90Days": 2,
+        "late120PlusDays": 1
+      }
+    }
+  },
+  "historicalData": {
+    "netWorth": [
+      {"month": "Jan", "value": 580000},
+      {"month": "Feb", "value": 595000},
+      {"month": "Mar", "value": 610000},
+      {"month": "Apr", "value": 605000},
+      {"month": "May", "value": 620000},
+      {"month": "Jun", "value": 635000},
+      {"month": "Jul", "value": 658305}
+    ],
+    "creditScore": [
+      {"month": "Jan", "score": 725},
+      {"month": "Feb", "score": 730},
+      {"month": "Mar", "score": 735},
+      {"month": "Apr", "score": 720},
+      {"month": "May", "score": 740},
+      {"month": "Jun", "score": 745},
+      {"month": "Jul", "score": 746}
+    ],
+    "monthlyCashFlow": [
+      {"month": "Jan", "surplus": 55000, "income": 125000, "expenses": 70000},
+      {"month": "Feb", "surplus": 58000, "income": 125000, "expenses": 67000},
+      {"month": "Mar", "surplus": 60000, "income": 128000, "expenses": 68000},
+      {"month": "Apr", "surplus": 57000, "income": 125000, "expenses": 68000},
+      {"month": "May", "surplus": 59000, "income": 126000, "expenses": 67000},
+      {"month": "Jun", "surplus": 60500, "income": 127500, "expenses": 67000},
+      {"month": "Jul", "surplus": 61500, "income": 128500, "expenses": 67000}
+    ]
+  },
+  "aiGeneratedInsights": {
+    "overallProfile": "Strong financial foundation with opportunity to optimize credit utilization",
+    "netWorthInsights": [
+      "Portfolio grew 13.5% in 6 months, outperforming market by 3.2%",
+      "57% allocation in low-yield assets - consider rebalancing",
+      "Emergency fund covers 4.2 months - aim for 6 months coverage"
+    ],
+    "creditInsights": [
+      "Clear ₹47k overdue to boost score by 50+ points immediately",
+      "Recent 4 inquiries reduced score by 15 points - avoid new applications",
+      "19-year credit history is your strongest asset - leverage it"
+    ]
+  },
+  "wealthProfile": {
+    "assetBreakdown": [
+      {
+        "category": "EPF",
+        "value": 211111.0,
+        "percentage": 29.22,
+        "color": "#4A90E2",
+        "growth": {
+          "monthly": 1.5,
+          "yearly": 18.2
+        },
+        "liquidity": "Low"
+      },
+      {
+        "category": "Indian Securities",
+        "value": 200642.0,
+        "percentage": 27.78,
+        "color": "#50E3C2",
+        "growth": {
+          "monthly": 3.2,
+          "yearly": 25.6
+        },
+        "liquidity": "High"
+      },
+      {
+        "category": "Savings Accounts",
+        "value": 195297.0,
+        "percentage": 27.04,
+        "color": "#F5A623",
+        "growth": {
+          "monthly": 0.3,
+          "yearly": 3.5
+        },
+        "liquidity": "Immediate"
+      },
+      {
+        "category": "Mutual Funds",
+        "value": 84642.0,
+        "percentage": 11.72,
+        "color": "#7ED321",
+        "growth": {
+          "monthly": 2.8,
+          "yearly": 15.4
+        },
+        "liquidity": "High"
+      },
+      {
+        "category": "US Securities",
+        "value": 30613.0,
+        "percentage": 4.24,
+        "color": "#BD10E0",
+        "growth": {
+          "monthly": 4.1,
+          "yearly": 32.8
+        },
+        "liquidity": "High"
+      }
+    ],
+    "liabilityBreakdown": [
+      {
+        "category": "Other Loans",
+        "value": 42000.0,
+        "percentage": 65.63,
+        "color": "#D0021B",
+        "monthlyPayment": 5500,
+        "interestRate": 12.5
+      },
+      {
+        "category": "Home Loan",
+        "value": 17000.0,
+        "percentage": 26.56,
+        "color": "#F8821A",
+        "monthlyPayment": 2500,
+        "interestRate": 8.5
+      },
+      {
+        "category": "Vehicle Loan",
+        "value": 5000.0,
+        "percentage": 7.81,
+        "color": "#E7504C",
+        "monthlyPayment": 1000,
+        "interestRate": 11.5
+      }
+    ],
+    "investmentInsights": {
+      "summary": {
+        "totalInvestedValue": 51189.78,
+        "totalCurrentValue": 84642.17,
+        "overallReturns": 33452.39,
+        "overallReturnsPercentage": 65.35,
+        "annualizedReturns": 12.8
+      },
+      "topPerformer": {
+        "name": "Canara Robeco Gilt Fund",
+        "metric": "XIRR",
+        "value": "129.67%",
+        "status": "positive",
+        "category": "Government Bond"
+      },
+      "bottomPerformer": {
+        "name": "UTI Overnight Fund",
+        "metric": "XIRR",
+        "value": "-82.35%",
+        "status": "negative",
+        "category": "Overnight"
+      },
+      "assetAllocation": [
+        {
+          "class": "Debt",
+          "value": 54117.63,
+          "percentage": 63.94,
+          "color": "#4A90E2",
+          "riskLevel": "Low to Moderate"
+        },
+        {
+          "class": "Equity",
+          "value": 27119.93,
+          "percentage": 32.04,
+          "color": "#7ED321",
+          "riskLevel": "High"
+        },
+        {
+          "class": "Hybrid",
+          "value": 3281.5,
+          "percentage": 3.88,
+          "color": "#F5A623",
+          "riskLevel": "Moderate"
+        },
+        {
+          "class": "Cash",
+          "value": 123.11,
+          "percentage": 0.15,
+          "color": "#9B9B9B",
+          "riskLevel": "Very Low"
+        }
+      ],
+      "riskProfile": {
+        "level": "Moderately High",
+        "score": 68,
+        "description": "Portfolio contains a mix of risk levels, with a significant allocation to 'Very High Risk' and 'High Risk' funds.",
+        "color": "#D0021B",
+        "suitability": "Aggressive Growth"
+      }
+    },
+    "mutualFundHoldings": [
+      {
+        "fundId": "MF001",
+        "name": "Canara Robeco Gilt Fund",
+        "amc": "Canara Robeco",
+        "category": "Government Bond",
+        "assetClass": "Debt",
+        "currentValue": 54117.63,
+        "investedValue": 6655.46,
+        "unrealisedReturns": 47462.17,
+        "xirr": 129.67,
+        "riskLevel": "Moderate Risk",
+        "performanceRating": 5,
+        "expense_ratio": 0.48
+      },
+      {
+        "fundId": "MF002",
+        "name": "ICICI Prudential Nifty 50 Index Fund",
+        "amc": "ICICI Prudential",
+        "category": "Index Funds",
+        "assetClass": "Equity",
+        "currentValue": 27119.93,
+        "investedValue": 10027.25,
+        "unrealisedReturns": -3103.46,
+        "xirr": -10.5,
+        "riskLevel": "Very High Risk",
+        "performanceRating": 3,
+        "expense_ratio": 0.95
+      },
+      {
+        "fundId": "MF003",
+        "name": "ICICI Prudential Balanced Advantage Fund",
+        "amc": "ICICI Prudential",
+        "category": "Dynamic Asset Allocation",
+        "assetClass": "Hybrid",
+        "currentValue": 3281.5,
+        "investedValue": 5272.0,
+        "unrealisedReturns": -3833.19,
+        "xirr": -17.41,
+        "riskLevel": "High Risk",
+        "performanceRating": 2,
+        "expense_ratio": 1.35
+      },
+      {
+        "fundId": "MF004",
+        "name": "UTI Overnight Fund",
+        "amc": "UTI",
+        "category": "Overnight",
+        "assetClass": "Cash",
+        "currentValue": 123.11,
+        "investedValue": 29235.07,
+        "unrealisedReturns": -29111.96,
+        "xirr": -82.35,
+        "riskLevel": "Low Risk",
+        "performanceRating": 1,
+        "expense_ratio": 0.15
+      }
+    ],
+    "bankAccounts": [
+      {
+        "accountId": "BANK001",
+        "provider": "NSDL",
+        "type": "Demat (Equities)",
+        "balance": 12000.0,
+        "accountNumber": "XXXXXX2724",
+        "status": "Active",
+        "lastActivity": "2025-07-08"
+      },
+      {
+        "accountId": "BANK002",
+        "provider": "NSDL",
+        "type": "Demat (ETF)",
+        "balance": 24913.6,
+        "accountNumber": "XXXXXX1383",
+        "status": "Active",
+        "lastActivity": "2025-07-07"
+      },
+      {
+        "accountId": "BANK003",
+        "provider": "HDFC",
+        "type": "Savings Account",
+        "balance": 5225.0,
+        "accountNumber": "XXXXXX9026",
+        "status": "Active",
+        "lastActivity": "2025-07-09",
+        "interestRate": 3.5
+      },
+      {
+        "accountId": "BANK004",
+        "provider": "NSDL",
+        "type": "Demat (REIT)",
+        "balance": 24913.6,
+        "accountNumber": "XXXXXX9872",
+        "status": "Active",
+        "lastActivity": "2025-07-05"
+      },
+      {
+        "accountId": "BANK005",
+        "provider": "HDFC",
+        "type": "Savings Account",
+        "balance": 2388.0,
+        "accountNumber": "XXXXXX3885",
+        "status": "Active",
+        "lastActivity": "2025-07-09",
+        "interestRate": 3.5
+      },
+      {
+        "accountId": "BANK006",
+        "provider": "HDFC",
+        "type": "Current Account",
+        "balance": 958.0,
+        "accountNumber": "XXXXXX3779",
+        "status": "Active",
+        "lastActivity": "2025-07-08",
+        "interestRate": 0
+      },
+      {
+        "accountId": "BANK007",
+        "provider": "HDFC",
+        "type": "Recurring Deposit",
+        "balance": 0.0,
+        "accountNumber": "XXXXXX7319",
+        "status": "Data Unavailable",
+        "lastActivity": "Unknown"
+      },
+      {
+        "accountId": "BANK008",
+        "provider": "NSDL",
+        "type": "Demat (Equities)",
+        "balance": 12000.0,
+        "accountNumber": "XXXXXX0310",
+        "status": "Active",
+        "lastActivity": "2025-07-06"
+      },
+      {
+        "accountId": "BANK009",
+        "provider": "NSDL",
+        "type": "Demat (InvIT)",
+        "balance": 24913.6,
+        "accountNumber": "XXXXXX2596",
+        "status": "Active",
+        "lastActivity": "2025-07-04"
+      }
+    ]
+  },
+  "riskAssessment": {
+    "overallRisk": "Moderate",
+    "riskScore": 65,
+    "color": "#FFD700",
+    "summary": "The credit score is Good, but multiple accounts have past due balances, indicating recent payment stress. High inquiry volume also suggests increased credit-seeking activity.",
+    "riskFactors": {
+      "creditRisk": {
+        "level": "Moderate-High",
+        "score": 45,
+        "factors": ["Multiple overdue accounts", "High past due amount", "Recent credit inquiries"]
+      },
+      "liquidityRisk": {
+        "level": "Low",
+        "score": 85,
+        "factors": ["Good savings balance", "Multiple active accounts", "Diverse asset portfolio"]
+      },
+      "marketRisk": {
+        "level": "Moderate",
+        "score": 70,
+        "factors": ["Significant equity exposure", "International investments", "Volatile mutual fund performance"]
+      }
+    },
+    "positiveFactors": [
+      "Good credit score (746)",
+      "Long credit history established in 2006",
+      "Diverse mix of credit accounts (Loans, Credit Card)",
+      "Strong net worth of ₹658,305",
+      "Low debt-to-asset ratio (8.86%)",
+      "Diverse investment portfolio",
+      "Significant retirement savings (EPF)"
+    ],
+    "negativeFactors": [
+      "Significant total past due amount of ₹47,000",
+      "Multiple accounts with reported delinquencies and 'Written Off' status",
+      "High number of recent credit inquiries (4 in last 90 days)",
+      "Poor performance in some mutual fund investments",
+      "High concentration in debt funds (63.94%)"
+    ],
+    "recommendations": [
+      {
+        "priority": "High",
+        "category": "Credit Management",
+        "action": "Prioritize paying off overdue balances to improve payment history and score.",
+        "impact": "Could improve credit score by 50-80 points",
+        "timeframe": "1-3 months"
+      },
+      {
+        "priority": "High",
+        "category": "Debt Reduction",
+        "action": "Contact lenders regarding 'Written Off' and 'Settled' accounts to ensure they are reported correctly.",
+        "impact": "Improve credit report accuracy",
+        "timeframe": "Immediate"
+      },
+      {
+        "priority": "Medium",
+        "category": "Credit Behavior",
+        "action": "Limit new credit applications in the short term to avoid appearing credit-hungry.",
+        "impact": "Prevent further score reduction",
+        "timeframe": "3-6 months"
+      },
+      {
+        "priority": "Medium",
+        "category": "Investment Strategy",
+        "action": "Review and rebalance mutual fund portfolio, consider exiting poor performers.",
+        "impact": "Improve overall returns by 5-10%",
+        "timeframe": "1-2 months"
+      },
+      {
+        "priority": "Low",
+        "category": "Asset Allocation",
+        "action": "Consider increasing equity allocation for long-term wealth creation.",
+        "impact": "Higher potential returns",
+        "timeframe": "6-12 months"
+      }
+    ]
+  },
+  "financialGoals": {
+    "emergencyFund": {
+      "target": 300000,
+      "current": 195297,
+      "progress": 65.1,
+      "monthsOfExpenses": 4.2,
+      "status": "Below Target",
+      "recommendation": "Increase emergency fund to cover 6 months of expenses"
+    },
+    "debtFreedom": {
+      "totalDebt": 139000,
+      "monthlyPayment": 9000,
+      "projectedPayoffMonths": 18,
+      "interestSavingsPotential": 12500
+    },
+    "wealthAccumulation": {
+      "currentNetWorth": 658305,
+      "projectedNetWorth1Year": 750000,
+      "projectedNetWorth5Years": 1200000,
+      "monthlyInvestmentRequired": 15000
+    }
+  },
+  "actionItems": [
+    {
+      "id": "ACT001",
+      "title": "Pay Overdue Balances",
+      "description": "Clear ₹47,000 in past due amounts across all accounts",
+      "priority": "Critical",
+      "deadline": "2025-08-09",
+      "impact": "High",
+      "category": "Credit Repair"
+    },
+    {
+      "id": "ACT002",
+      "title": "Negotiate Written-Off Accounts",
+      "description": "Contact Aditya Birla Finance and Epifi Capital for settlement",
+      "priority": "High",
+      "deadline": "2025-07-20",
+      "impact": "Medium",
+      "category": "Credit Repair"
+    },
+    {
+      "id": "ACT003",
+      "title": "Stop Credit Applications",
+      "description": "Pause all new credit applications for 6 months",
+      "priority": "Medium",
+      "deadline": "2026-01-09",
+      "impact": "Medium",
+      "category": "Credit Score"
+    },
+    {
+      "id": "ACT004",
+      "title": "Review Investment Portfolio",
+      "description": "Exit UTI Overnight Fund and rebalance portfolio",
+      "priority": "Medium",
+      "deadline": "2025-07-31",
+      "impact": "High",
+      "category": "Investments"
+    },
+    {
+      "id": "ACT005",
+      "title": "Build Emergency Fund",
+      "description": "Add ₹104,703 to reach 6-month expense coverage",
+      "priority": "Low",
+      "deadline": "2025-12-31",
+      "impact": "Medium",
+      "category": "Savings"
+    }
+  ],
+  "monthlyFinancialSnapshot": {
+    "income": {
+      "salary": 125000,
+      "investments": 3500,
+      "other": 0,
+      "total": 128500
+    },
+    "expenses": {
+      "emi": 9000,
+      "living": 35000,
+      "utilities": 8000,
+      "others": 15000,
+      "total": 67000
+    },
+    "surplus": 61500,
+    "savingsRate": 47.86,
+    "recommendedAllocation": {
+      "emergencyFund": 15000,
+      "debtRepayment": 20000,
+      "investments": 20000,
+      "discretionary": 6500
+    }
+  }
+}
