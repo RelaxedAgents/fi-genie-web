@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 from agent.streaming_agent import StreamingFinanceGenieAgent
 from agent.llm_friendly_streaming_agent import create_llm_friendly_streaming_agent
+from agent.finance_genie_agent import FinanceGenieAgent
 from config.settings import settings
 from services.perplexity_service import PerplexityService
 
@@ -139,21 +140,22 @@ async def stream_agent_query(
     x_phone_number: str = Header(..., alias="X-Phone-Number")
 ):
     """
-    Stream agent responses using Server-Sent Events (SSE) with LLM-friendly updates.
+    Stream FinanceGenie's thinking process in real-time.
     
-    This endpoint streams conversational updates and progress information.
+    This endpoint streams the agent's actual reasoning process as it works
+    through the user's financial query, showing structured thinking, tool usage,
+    and analysis in real-time.
     
     Returns:
-        StreamingResponse with SSE content type
+        StreamingResponse with SSE content type showing thinking process
     """
     try:
         # Get services from app state
         app_state = getattr(request_obj.app.state, "app_state", {})
         perplexity_service = app_state.get("services", {}).get("perplexity")
-        gemini_service = app_state.get("services", {}).get("gemini")
         
-        # Create LLM-friendly streaming agent
-        agent = create_llm_friendly_streaming_agent(
+        # Create FinanceGenie agent with thinking capabilities
+        agent = FinanceGenieAgent(
             project_id=settings.project_id,
             location=settings.location,
             mcp_server_url=settings.mcp_server_url,
@@ -161,14 +163,13 @@ async def stream_agent_query(
             perplexity_service=perplexity_service
         )
         
-        # Return streaming response with friendly updates
         return StreamingResponse(
-            generate_friendly_sse_events(agent, request.query, gemini_service),
+            generate_thinking_stream(agent, request.query),
             media_type="text/event-stream",
             headers={
                 "Cache-Control": "no-cache",
                 "Connection": "keep-alive",
-                "X-Accel-Buffering": "no",  # Disable Nginx buffering
+                "X-Accel-Buffering": "no",
             }
         )
         
@@ -257,6 +258,72 @@ async def stream_agent_query_native(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/query/thinking")
+async def stream_finance_thinking(
+    request: StreamQueryRequest,
+    request_obj: Request,
+    x_phone_number: str = Header(..., alias="X-Phone-Number")
+):
+    """
+    Stream FinanceGenie's thinking process in real-time.
+    
+    This endpoint streams the agent's actual reasoning process as it works
+    through the user's financial query, showing structured thinking, tool usage,
+    and analysis in real-time.
+    
+    Returns:
+        StreamingResponse with SSE content type showing thinking process
+    """
+    try:
+        # Get services from app state
+        app_state = getattr(request_obj.app.state, "app_state", {})
+        perplexity_service = app_state.get("services", {}).get("perplexity")
+        
+        # Create FinanceGenie agent (same as existing)
+        agent = FinanceGenieAgent(
+            project_id=settings.project_id,
+            location=settings.location,
+            mcp_server_url=settings.mcp_server_url,
+            phone_number=x_phone_number,
+            perplexity_service=perplexity_service
+        )
+        
+        return StreamingResponse(
+            generate_thinking_stream(agent, request.query),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no",
+            }
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def generate_thinking_stream(agent: FinanceGenieAgent, query: str) -> AsyncIterator[str]:
+    """Generate SSE stream from thinking events."""
+    try:
+        async for event in agent.stream_query_with_thinking(query):
+            yield f"data: {json.dumps(event)}\n\n"
+            
+            if event.get("type") == "stream_complete":
+                break
+                
+        yield "event: complete\ndata: {}\n\n"
+        
+    except Exception as e:
+        from datetime import datetime
+        error_event = {
+            "type": "error",
+            "content": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        yield f"data: {json.dumps(error_event)}\n\n"
+        yield "event: complete\ndata: {}\n\n"
 
 
 @router.get("/test")
