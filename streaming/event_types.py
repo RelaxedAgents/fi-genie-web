@@ -36,6 +36,11 @@ class EventType(Enum):
     PARSING_INTENT = "parsing_intent"
     SEARCHING_DOCUMENTS = "searching_documents"
     SYNTHESIZING = "synthesizing"
+    
+    # LLM-friendly events
+    FRIENDLY_UPDATE = "friendly_update"
+    PROGRESS_UPDATE = "progress_update"
+    FINAL_ANSWER = "final_answer"
 
 
 @dataclass

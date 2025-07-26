@@ -75,10 +75,24 @@ except Exception as e:
     logger.warning(f"Perplexity service initialization failed: {str(e)}")
     perplexity_service = None
 
+# Initialize Gemini service
+gemini_service = None
+try:
+    from services.gemini_service import create_gemini_service
+    gemini_service = create_gemini_service(
+        project_id=settings.project_id,
+        location=settings.location
+    )
+    logger.info(f"Gemini service initialized successfully")
+except Exception as e:
+    logger.warning(f"Gemini service initialization failed: {str(e)}")
+    gemini_service = None
+
 # Store services in app state for access by routes
 app.state.app_state = {
     "services": {
-        "perplexity": perplexity_service
+        "perplexity": perplexity_service,
+        "gemini": gemini_service
     }
 }
 logger.info("Services stored in app state")

@@ -155,6 +155,7 @@ class GeminiService:
             # Log the request
             logger.info(f"Sending request to Gemini model: {self.model_name}")
             logger.info(f"Prompt preview: {prompt[:100]}...")
+            logger.debug(f"FULL PROMPT: {prompt}")
             
             # Get the model
             model = self.get_model()
@@ -168,6 +169,7 @@ class GeminiService:
             duration = round(end_time - start_time, 2)
             logger.info(f"Received response from Gemini in {duration}s")
             logger.info(f"Response preview: {str(response)[:100]}...")
+            logger.debug(f"FULL RESPONSE: {str(response)}")
             
             return response
         except Exception as e:

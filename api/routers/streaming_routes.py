@@ -8,6 +8,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from agent.streaming_agent import StreamingFinanceGenieAgent
+from agent.llm_friendly_streaming_agent import create_llm_friendly_streaming_agent
 from config.settings import settings
 from services.perplexity_service import PerplexityService
 
@@ -69,6 +70,38 @@ async def generate_sse_events(agent: StreamingFinanceGenieAgent, query: str) -> 
         yield f"data: {json.dumps(error_data)}\n\n"
 
 
+async def generate_friendly_sse_events(agent, query: str, gemini_service) -> AsyncIterator[str]:
+    """
+    Generate SSE events with LLM-friendly updates.
+    
+    Args:
+        agent: The LLM-friendly streaming agent instance
+        query: User query to process
+        gemini_service: Gemini service for generating friendly updates
+        
+    Yields:
+        SSE formatted strings
+    """
+    try:
+        # Use the LLM-friendly streaming method
+        async for event in agent.aquery_stream_friendly(query, gemini_service):
+            # Convert to SSE format
+            yield f"data: {json.dumps(event)}\n\n"
+            
+        # Send final completion event
+        yield "event: complete\ndata: {}\n\n"
+        
+    except Exception as e:
+        logger.error(f"Error in friendly streaming: {e}")
+        # Send error event
+        error_data = {
+            "type": "error",
+            "content": str(e),
+            "metadata": {"error_type": type(e).__name__}
+        }
+        yield f"data: {json.dumps(error_data)}\n\n"
+
+
 async def generate_sse_native_events(agent: StreamingFinanceGenieAgent, query: str) -> AsyncIterator[str]:
     """
     Generate Server-Sent Events using LangGraph's native streaming.
@@ -106,25 +139,31 @@ async def stream_agent_query(
     x_phone_number: str = Header(..., alias="X-Phone-Number")
 ):
     """
-    Stream agent responses using Server-Sent Events (SSE).
+    Stream agent responses using Server-Sent Events (SSE) with LLM-friendly updates.
     
-    This endpoint streams both intermediate reasoning steps and final LLM tokens.
-    Uses custom callbacks for detailed event tracking.
+    This endpoint streams conversational updates and progress information.
     
     Returns:
         StreamingResponse with SSE content type
     """
     try:
-        # Get Perplexity service from app state if available
+        # Get services from app state
         app_state = getattr(request_obj.app.state, "app_state", {})
         perplexity_service = app_state.get("services", {}).get("perplexity")
+        gemini_service = app_state.get("services", {}).get("gemini")
         
-        # Create streaming agent instance
-        agent = create_streaming_agent(x_phone_number, perplexity_service)
+        # Create LLM-friendly streaming agent
+        agent = create_llm_friendly_streaming_agent(
+            project_id=settings.project_id,
+            location=settings.location,
+            mcp_server_url=settings.mcp_server_url,
+            phone_number=x_phone_number,
+            perplexity_service=perplexity_service
+        )
         
-        # Return streaming response
+        # Return streaming response with friendly updates
         return StreamingResponse(
-            generate_sse_events(agent, request.query),
+            generate_friendly_sse_events(agent, request.query, gemini_service),
             media_type="text/event-stream",
             headers={
                 "Cache-Control": "no-cache",
@@ -147,21 +186,29 @@ async def stream_agent_query_get(
     Stream agent responses using GET request with query parameter.
     
     Alternative endpoint for clients that prefer GET requests for SSE.
+    Uses LLM-generated friendly updates with progress information.
     
     Returns:
         StreamingResponse with SSE content type
     """
     try:
-        # Get Perplexity service from app state if available
+        # Get services from app state
         app_state = getattr(request_obj.app.state, "app_state", {})
         perplexity_service = app_state.get("services", {}).get("perplexity")
+        gemini_service = app_state.get("services", {}).get("gemini")
         
-        # Create streaming agent instance
-        agent = create_streaming_agent(x_phone_number, perplexity_service)
+        # Create LLM-friendly streaming agent
+        agent = create_llm_friendly_streaming_agent(
+            project_id=settings.project_id,
+            location=settings.location,
+            mcp_server_url=settings.mcp_server_url,
+            phone_number=x_phone_number,
+            perplexity_service=perplexity_service
+        )
         
-        # Return streaming response
+        # Return streaming response with friendly updates
         return StreamingResponse(
-            generate_sse_events(agent, query),
+            generate_friendly_sse_events(agent, query, gemini_service),
             media_type="text/event-stream",
             headers={
                 "Cache-Control": "no-cache",
@@ -172,6 +219,7 @@ async def stream_agent_query_get(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 
 @router.post("/query/native")
