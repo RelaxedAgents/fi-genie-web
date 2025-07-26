@@ -352,7 +352,7 @@ class FinanceGenieAgent:
             
             self.logger.info(f"Processed {event_count} events, {llm_events_seen} LLM events, buffer length: {len(response_buffer)}")
             
-            # 4. Final Response (Clean LLM response only, no duplication)
+            # 4. Final Response (Single comprehensive response as per XML prompt rules)
             if response_buffer.strip():
                 # Clean the response buffer - remove any query duplication
                 clean_response = response_buffer.strip()
@@ -361,8 +361,14 @@ class FinanceGenieAgent:
                 if clean_response.startswith(query):
                     clean_response = clean_response[len(query):].strip()
                 
-                self.logger.info(f"Final analysis generated with {len(clean_response)} characters")
-                yield {"type": "final_analysis", "content": clean_response, "timestamp": datetime.utcnow().isoformat()}
+                # Only send final_analysis if we have a complete, comprehensive response
+                # The XML prompt instructs the LLM to provide one complete final answer
+                if len(clean_response) > 100:  # Ensure it's a substantial response
+                    self.logger.info(f"Final comprehensive analysis generated with {len(clean_response)} characters")
+                    yield {"type": "final_analysis", "content": clean_response, "timestamp": datetime.utcnow().isoformat()}
+                else:
+                    self.logger.warning(f"Response too short ({len(clean_response)} chars) - may be incomplete")
+                    yield {"type": "final_analysis", "content": clean_response, "timestamp": datetime.utcnow().isoformat()}
             else:
                 self.logger.warning("No response content accumulated - this indicates a streaming issue")
                 # Provide a more helpful error message

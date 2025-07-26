@@ -20,6 +20,8 @@ class IntelligentEventInterpreter:
             "fetch_net_worth": "💰 Analyzing your financial portfolio...",
             "fetch_epf_details": "🏦 Checking your retirement savings...",
             "market_research": "📊 Researching current market trends...",
+            "fetch_mf_transactions": "📈 Analyzing your mutual fund investments...",
+            "fetch_stock_transactions": "📊 Reviewing your stock portfolio...",
         }
         
         self.completion_messages = {
@@ -27,6 +29,8 @@ class IntelligentEventInterpreter:
             "fetch_net_worth": "✅ Portfolio analysis done - calculating metrics...",
             "fetch_epf_details": "✅ Retirement data retrieved - projecting growth...",
             "market_research": "✅ Market research complete - found relevant opportunities!",
+            "fetch_mf_transactions": "✅ Mutual fund analysis complete - performance calculated!",
+            "fetch_stock_transactions": "✅ Stock portfolio review done - returns analyzed!",
         }
     
     def get_tool_start_message(self, tool_name: str) -> str:
