@@ -273,10 +273,12 @@ class FinanceGenieAgent:
             }
     
     async def stream_query_with_thinking(self, query: str) -> AsyncIterator[Dict[str, Any]]:
-        """Clean, standards-based streaming implementation with comprehensive debugging."""
+        """Smart streaming implementation with phase separation."""
         
         interpreter = IntelligentEventInterpreter()
-        response_buffer = ""  # Accumulate the complete response
+        thinking_buffer = ""  # Accumulate thinking process
+        final_analysis_buffer = ""  # Accumulate final analysis
+        final_analysis_started = False  # Track phase transition
         event_count = 0
         llm_events_seen = 0
         
@@ -299,7 +301,7 @@ class FinanceGenieAgent:
                 if event_count <= 10 or event_type in ["on_llm_stream", "on_llm_start", "on_llm_end"]:
                     self.logger.debug(f"Event #{event_count}: {event_type} - Data keys: {list(event.get('data', {}).keys())}")
                 
-                # 1. LLM Token Streaming (Primary mechanism) - Clean extraction
+                # 1. LLM Token Streaming with Smart Phase Detection
                 if event_type == "on_llm_stream":
                     llm_events_seen += 1
                     chunk = event.get("data", {}).get("chunk", {})
@@ -308,9 +310,20 @@ class FinanceGenieAgent:
                     content = self._extract_string_content(chunk)
                     
                     if content.strip():
-                        response_buffer += content
-                        self.logger.debug(f"LLM token: '{content}' (buffer length: {len(response_buffer)})")
-                        yield {"type": "agent_response", "content": content, "timestamp": datetime.utcnow().isoformat()}
+                        # Check if final analysis phase has started
+                        if "FINAL_ANSWER:" in content or final_analysis_started:
+                            final_analysis_started = True
+                            # Remove the trigger and keep only the Markdown content
+                            clean_content = content.replace("FINAL_ANSWER:", "").strip()
+                            if clean_content:  # Only add non-empty content
+                                final_analysis_buffer += clean_content
+                            self.logger.debug(f"Final analysis token: '{clean_content}' (final buffer length: {len(final_analysis_buffer)})")
+                            # Don't send as agent_response - only accumulate for final_analysis
+                        else:
+                            # Still in thinking phase
+                            thinking_buffer += content
+                            self.logger.debug(f"Thinking token: '{content}' (thinking buffer length: {len(thinking_buffer)})")
+                            yield {"type": "agent_response", "content": content, "timestamp": datetime.utcnow().isoformat()}
                     else:
                         self.logger.debug(f"LLM event with no valid content: chunk={type(chunk)}")
                 
@@ -324,9 +337,19 @@ class FinanceGenieAgent:
                     content = self._extract_string_content(raw_content)
                     
                     if content.strip():
-                        response_buffer += content
-                        self.logger.debug(f"Alternative LLM token: '{content}'")
-                        yield {"type": "agent_response", "content": content, "timestamp": datetime.utcnow().isoformat()}
+                        # Apply same phase detection logic
+                        if "FINAL_ANSWER:" in content or final_analysis_started:
+                            final_analysis_started = True
+                            # Remove the trigger and keep only the Markdown content
+                            clean_content = content.replace("FINAL_ANSWER:", "").strip()
+                            if clean_content:  # Only add non-empty content
+                                final_analysis_buffer += clean_content
+                            self.logger.debug(f"Alternative final analysis token: '{clean_content}'")
+                            # Don't send as agent_response
+                        else:
+                            thinking_buffer += content
+                            self.logger.debug(f"Alternative thinking token: '{content}'")
+                            yield {"type": "agent_response", "content": content, "timestamp": datetime.utcnow().isoformat()}
                 
                 # 2. Tool Progress Updates (Secondary - for UX)
                 elif event_type == "on_tool_start":
@@ -341,38 +364,39 @@ class FinanceGenieAgent:
                     self.logger.info(f"Tool completed: {tool_name}")
                     yield {"type": "progress_update", "content": message, "timestamp": datetime.utcnow().isoformat()}
                 
-                # 3. Fallback: Try to extract final response from chain end if no LLM streaming
-                elif event_type == "on_chain_end" and not response_buffer.strip():
+                # 3. Fallback: Try to extract final response from chain end if no streaming occurred
+                elif event_type == "on_chain_end" and not thinking_buffer.strip() and not final_analysis_buffer.strip():
                     outputs = event.get("data", {}).get("output", {})
                     if isinstance(outputs, dict) and "messages" in outputs and outputs["messages"]:
                         final_message = outputs["messages"][-1]
                         if hasattr(final_message, 'content') and final_message.content.strip():
-                            response_buffer = final_message.content
-                            self.logger.info(f"Fallback: Extracted response from chain_end ({len(response_buffer)} chars)")
+                            # Use fallback content as final analysis
+                            final_analysis_buffer = final_message.content
+                            self.logger.info(f"Fallback: Extracted response from chain_end ({len(final_analysis_buffer)} chars)")
             
-            self.logger.info(f"Processed {event_count} events, {llm_events_seen} LLM events, buffer length: {len(response_buffer)}")
+            self.logger.info(f"Processed {event_count} events, {llm_events_seen} LLM events")
+            self.logger.info(f"Thinking buffer length: {len(thinking_buffer)}, Final analysis buffer length: {len(final_analysis_buffer)}")
             
-            # 4. Final Response (Single comprehensive response as per XML prompt rules)
-            if response_buffer.strip():
-                # Clean the response buffer - remove any query duplication
-                clean_response = response_buffer.strip()
+            # 4. Send Final Analysis (Only the final analysis buffer, not thinking)
+            if final_analysis_buffer.strip():
+                # Clean the final analysis buffer
+                clean_response = final_analysis_buffer.strip()
                 
                 # Remove query duplication if it exists at the beginning
                 if clean_response.startswith(query):
                     clean_response = clean_response[len(query):].strip()
                 
-                # Only send final_analysis if we have a complete, comprehensive response
-                # The XML prompt instructs the LLM to provide one complete final answer
-                if len(clean_response) > 100:  # Ensure it's a substantial response
+                # Send only the final analysis content
+                if len(clean_response) > 10:  # Ensure it's not empty
                     self.logger.info(f"Final comprehensive analysis generated with {len(clean_response)} characters")
                     yield {"type": "final_analysis", "content": clean_response, "timestamp": datetime.utcnow().isoformat()}
                 else:
-                    self.logger.warning(f"Response too short ({len(clean_response)} chars) - may be incomplete")
+                    self.logger.warning(f"Final analysis too short ({len(clean_response)} chars) - may be incomplete")
                     yield {"type": "final_analysis", "content": clean_response, "timestamp": datetime.utcnow().isoformat()}
             else:
-                self.logger.warning("No response content accumulated - this indicates a streaming issue")
-                # Provide a more helpful error message
-                yield {"type": "final_analysis", "content": f"Streaming completed but no LLM response was captured. Processed {event_count} events with {llm_events_seen} LLM events.", "timestamp": datetime.utcnow().isoformat()}
+                self.logger.warning("No final analysis content accumulated")
+                # Provide a helpful error message
+                yield {"type": "final_analysis", "content": f"Final analysis not captured. Processed {event_count} events with {llm_events_seen} LLM events. Thinking buffer: {len(thinking_buffer)} chars.", "timestamp": datetime.utcnow().isoformat()}
             
             self.logger.info("Streaming query completed successfully")
             yield {"type": "stream_complete", "content": "Analysis complete", "timestamp": datetime.utcnow().isoformat()}
