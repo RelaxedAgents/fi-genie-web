@@ -20,6 +20,7 @@ langgraph==0.0.69
 # Async & HTTP
 aiohttp==3.9.1
 httpx==0.25.2
+requests
 
 # Streaming
 sse-starlette==1.8.2

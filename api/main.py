@@ -18,6 +18,7 @@ from agent.finance_genie_agent import FinanceGenieAgent
 from config.settings import settings
 from api.routers.fi_mcp_routes import router as fi_mcp_router
 from api.routers.streaming_routes import router as streaming_router
+from api.routers.transform_routes import router as transform_router
 from services.perplexity_service import PerplexityService, create_perplexity_service
 
 # Configure logging
@@ -101,6 +102,7 @@ logger.info("Services stored in app state")
 # Include routers
 app.include_router(fi_mcp_router)
 app.include_router(streaming_router)
+app.include_router(transform_router)
 
 
 @app.get("/health", tags=["Health"])
@@ -145,6 +147,16 @@ async def root():
                 "query_native": "/agent/stream/query/native",
                 "test": "/agent/stream/test"
             }
+        },
+        "transform_endpoints": {
+            "net_worth": "/api/v1/transform/dashboard/net-worth",
+            "credit_report": "/api/v1/transform/dashboard/credit-report",
+            "investments": "/api/v1/transform/dashboard/investments",
+            "banking": "/api/v1/transform/dashboard/banking",
+            "epf": "/api/v1/transform/dashboard/epf",
+            "complete_dashboard": "/api/v1/transform/dashboard/complete",
+            "custom": "/api/v1/transform/custom",
+            "health": "/api/v1/transform/health"
         }
     }
 

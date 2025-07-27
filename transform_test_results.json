@@ -1,0 +1,996 @@
+{
+  "test_net_worth_dashboard": {
+    "type": "net_worth",
+    "currency": "INR",
+    "summary": {
+      "netWorth": {
+        "value": 7800000,
+        "formatted": "\u20b9 78,00,000"
+      },
+      "totalAssets": {
+        "value": 12100000,
+        "formatted": "\u20b9 1,21,00,000"
+      },
+      "totalLiabilities": {
+        "value": 4300000,
+        "formatted": "\u20b9 43,00,000"
+      },
+      "changeSinceLastMonth": {
+        "value": 52000,
+        "formatted": "+ \u20b9 52,000",
+        "direction": "up"
+      }
+    },
+    "breakdown": {
+      "assets": [
+        {
+          "categoryName": "Real Estate",
+          "value": 7500000,
+          "formattedValue": "\u20b9 75,00,000",
+          "percentage": 61.98,
+          "color": "#2ECC71"
+        },
+        {
+          "categoryName": "Investments",
+          "value": 2300000,
+          "formattedValue": "\u20b9 23,00,000",
+          "percentage": 19.01,
+          "color": "#3498DB"
+        },
+        {
+          "categoryName": "Retirement Funds",
+          "value": 1200000,
+          "formattedValue": "\u20b9 12,00,000",
+          "percentage": 9.92,
+          "color": "#9B59B6"
+        },
+        {
+          "categoryName": "Cash & Equivalents",
+          "value": 500000,
+          "formattedValue": "\u20b9 5,00,000",
+          "percentage": 4.13,
+          "color": "#F1C40F"
+        },
+        {
+          "categoryName": "Other Property",
+          "value": 600000,
+          "formattedValue": "\u20b9 6,00,000",
+          "percentage": 4.96,
+          "color": "#E67E22"
+        }
+      ],
+      "liabilities": [
+        {
+          "categoryName": "Home Loan",
+          "value": 4000000,
+          "formattedValue": "\u20b9 40,00,000",
+          "percentage": 93.02,
+          "color": "#E74C3C"
+        },
+        {
+          "categoryName": "Car Loan",
+          "value": 250000,
+          "formattedValue": "\u20b9 2,50,000",
+          "percentage": 5.81,
+          "color": "#D35400"
+        },
+        {
+          "categoryName": "Credit Card Debt",
+          "value": 50000,
+          "formattedValue": "\u20b9 50,000",
+          "percentage": 1.16,
+          "color": "#C0392B"
+        }
+      ]
+    },
+    "recentItems": [
+      {
+        "id": "txn_1123",
+        "date": "2023-10-28",
+        "description": "SIP Investment - Nifty 50 Index Fund",
+        "category": "Investments",
+        "impact": "asset_increase",
+        "amount": {
+          "value": 15000,
+          "formatted": "+ \u20b9 15,000"
+        }
+      },
+      {
+        "id": "txn_1122",
+        "date": "2023-10-25",
+        "description": "Home Loan EMI (Principal)",
+        "category": "Loans",
+        "impact": "liability_decrease",
+        "amount": {
+          "value": -22000,
+          "formatted": "- \u20b9 22,000"
+        }
+      },
+      {
+        "id": "txn_1121",
+        "date": "2023-10-22",
+        "description": "Stock Purchase: TATA MOTORS",
+        "category": "Investments",
+        "impact": "asset_increase",
+        "amount": {
+          "value": 45000,
+          "formatted": "+ \u20b9 45,000"
+        }
+      },
+      {
+        "id": "txn_1120",
+        "date": "2023-10-20",
+        "description": "Credit Card Bill Paid",
+        "category": "Loans",
+        "impact": "liability_decrease",
+        "amount": {
+          "value": -18500,
+          "formatted": "- \u20b9 18,500"
+        }
+      }
+    ]
+  },
+  "test_credit_report_dashboard": {
+    "dashboard_type": "credit_report",
+    "summary": {
+      "credit_score": 746,
+      "total_outstanding_balance": {
+        "amount": 75000,
+        "currency": "INR"
+      },
+      "total_accounts": 6,
+      "active_accounts": 6,
+      "recent_enquiries_90d": 4,
+      "report_date": "2021-06-20"
+    },
+    "outstanding_balance_breakdown": [
+      {
+        "category": "Secured Loans",
+        "amount": 44000,
+        "currency": "INR",
+        "percentage": 59,
+        "color": "#4A90E2"
+      },
+      {
+        "category": "Unsecured Loans",
+        "amount": 31000,
+        "currency": "INR",
+        "percentage": 41,
+        "color": "#D0021B"
+      }
+    ],
+    "accounts": [
+      {
+        "lender": "HDFC Bank",
+        "type": "Auto Loan",
+        "status": "Settled",
+        "open_date": "2006-01-10",
+        "original_amount": {
+          "amount": 50000,
+          "currency": "INR"
+        },
+        "current_balance": {
+          "amount": 5000,
+          "currency": "INR"
+        },
+        "amount_past_due": {
+          "amount": 1000,
+          "currency": "INR"
+        },
+        "payment_status": "> 120 DPD"
+      },
+      {
+        "lender": "ICICI Bank",
+        "type": "Personal Loan",
+        "status": "Active",
+        "open_date": "2006-01-22",
+        "original_amount": {
+          "amount": 110000,
+          "currency": "INR"
+        },
+        "current_balance": {
+          "amount": 17000,
+          "currency": "INR"
+        },
+        "amount_past_due": {
+          "amount": 13000,
+          "currency": "INR"
+        },
+        "payment_status": "0 DPD"
+      },
+      {
+        "lender": "Aditya Brila Finance Limited",
+        "type": "Business Loan",
+        "status": "Written-off",
+        "open_date": "2006-01-19",
+        "original_amount": {
+          "amount": 95000,
+          "currency": "INR"
+        },
+        "current_balance": {
+          "amount": 14000,
+          "currency": "INR"
+        },
+        "amount_past_due": {
+          "amount": 10000,
+          "currency": "INR"
+        },
+        "payment_status": "31-60 DPD"
+      },
+      {
+        "lender": "Bajaj Finance",
+        "type": "Housing Loan",
+        "status": "Active",
+        "open_date": "2006-01-13",
+        "original_amount": {
+          "amount": 65000,
+          "currency": "INR"
+        },
+        "current_balance": {
+          "amount": 8000,
+          "currency": "INR"
+        },
+        "amount_past_due": {
+          "amount": 0,
+          "currency": "INR"
+        },
+        "payment_status": "0 DPD"
+      },
+      {
+        "lender": "Epifi Capital",
+        "type": "Credit Card",
+        "status": "Restructured",
+        "open_date": "2006-01-16",
+        "original_amount": {
+          "amount": 80000,
+          "currency": "INR"
+        },
+        "current_balance": {
+          "amount": 11000,
+          "currency": "INR"
+        },
+        "amount_past_due": {
+          "amount": 7000,
+          "currency": "INR"
+        },
+        "payment_status": "91-120 DPD"
+      },
+      {
+        "lender": "Mannapuram Finance",
+        "type": "Gold Loan",
+        "status": "Suit Filed / Wilful Default",
+        "open_date": "2006-01-25",
+        "original_amount": {
+          "amount": 125000,
+          "currency": "INR"
+        },
+        "current_balance": {
+          "amount": 20000,
+          "currency": "INR"
+        },
+        "amount_past_due": {
+          "amount": 16000,
+          "currency": "INR"
+        },
+        "payment_status": "1-30 DPD"
+      }
+    ]
+  },
+  "test_investment_dashboard": {
+    "summary": {
+      "title": "Investments",
+      "totalValue": 118127.05,
+      "totalValueFormatted": "\u20b91,18,127.05",
+      "itemCount": 13
+    },
+    "breakdown": [
+      {
+        "category": "Mutual Funds",
+        "value": 48553.53,
+        "valueFormatted": "\u20b948,553.53",
+        "percentage": 41.1,
+        "color": "#4A90E2"
+      },
+      {
+        "category": "Stocks",
+        "value": 69573.52,
+        "valueFormatted": "\u20b969,573.52",
+        "percentage": 58.9,
+        "color": "#50E3C2"
+      }
+    ],
+    "recentItems": [
+      {
+        "title": "INE916P01025",
+        "subtitle": "SELL | \u20b9200.00",
+        "date": "2025-07-15",
+        "type": "Stock"
+      },
+      {
+        "title": "INE040A01034",
+        "subtitle": "BUY | \u20b914,000.00",
+        "date": "2025-07-13",
+        "type": "Stock"
+      },
+      {
+        "title": "INE916P01025",
+        "subtitle": "BUY | \u20b955.00",
+        "date": "2025-07-11",
+        "type": "Stock"
+      },
+      {
+        "title": "INE916P01025",
+        "subtitle": "BUY | \u20b980.00",
+        "date": "2025-07-04",
+        "type": "Stock"
+      },
+      {
+        "title": "INE916P01025",
+        "subtitle": "BUY | \u20b930.00",
+        "date": "2025-06-05",
+        "type": "Stock"
+      }
+    ]
+  },
+  "test_banking_dashboard": {
+    "dashboard": {
+      "title": "Banking Dashboard",
+      "layout": "grid",
+      "items": [
+        {
+          "component": "summary",
+          "title": "Account Summary",
+          "metrics": [
+            {
+              "label": "Total Credits",
+              "value": "\u20b91,617,143.00",
+              "color": "#1cc88a"
+            },
+            {
+              "label": "Total Debits",
+              "value": "\u20b91,215,905.00",
+              "color": "#e74a3b"
+            },
+            {
+              "label": "Net Flow",
+              "value": "\u20b9401,238.00",
+              "color": "#1cc88a"
+            }
+          ]
+        },
+        {
+          "component": "breakdown",
+          "title": "Spending Breakdown",
+          "type": "list_with_progress",
+          "data": [
+            {
+              "category": "Bills & Utilities",
+              "amount": "\u20b9404,369.00",
+              "percentage": "33.26%",
+              "color": "#4e73df"
+            },
+            {
+              "category": "Transfers",
+              "amount": "\u20b9243,334.00",
+              "percentage": "20.01%",
+              "color": "#1cc88a"
+            },
+            {
+              "category": "ATM Withdrawal",
+              "amount": "\u20b9161,280.00",
+              "percentage": "13.26%",
+              "color": "#36b9cc"
+            },
+            {
+              "category": "Investments",
+              "amount": "\u20b9161,550.00",
+              "percentage": "13.29%",
+              "color": "#f6c23e"
+            },
+            {
+              "category": "Food & Dining",
+              "amount": "\u20b981,275.00",
+              "percentage": "6.68%",
+              "color": "#e74a3b"
+            },
+            {
+              "category": "Transport",
+              "amount": "\u20b981,197.00",
+              "percentage": "6.68%",
+              "color": "#858796"
+            },
+            {
+              "category": "Wallet Topup",
+              "amount": "\u20b980,776.00",
+              "percentage": "6.64%",
+              "color": "#5a5c69"
+            },
+            {
+              "category": "Other",
+              "amount": "\u20b91,124.00",
+              "percentage": "0.09%",
+              "color": "#d1d3e2"
+            }
+          ]
+        },
+        {
+          "component": "recent_items",
+          "title": "Recent Transactions",
+          "type": "list",
+          "data": [
+            {
+              "date": "09 Jul 2025",
+              "description": "UPI to Sheetal Ravindra",
+              "category": "Income",
+              "amount": "\u20b980,085.00",
+              "type": "CREDIT",
+              "color": "#1cc88a"
+            },
+            {
+              "date": "09 Jul 2025",
+              "description": "UPI to Dreamplug Technologi",
+              "category": "Bills & Utilities",
+              "amount": "\u20b980,677.00",
+              "type": "DEBIT",
+              "color": "#e74a3b"
+            },
+            {
+              "date": "09 Jul 2025",
+              "description": "UPI to Ravishankar",
+              "category": "Income",
+              "amount": "\u20b980,267.00",
+              "type": "CREDIT",
+              "color": "#1cc88a"
+            },
+            {
+              "date": "09 Jul 2025",
+              "description": "UPI to Hardik Agrawal",
+              "category": "Transfers",
+              "amount": "\u20b980,156.00",
+              "type": "DEBIT",
+              "color": "#e74a3b"
+            },
+            {
+              "date": "09 Jul 2025",
+              "description": "UPI to Uber India Systems",
+              "category": "Transport",
+              "amount": "\u20b980,565.00",
+              "type": "DEBIT",
+              "color": "#e74a3b"
+            },
+            {
+              "date": "09 Jul 2025",
+              "description": "UPI to Abdesh Kumar Yadav",
+              "category": "Income",
+              "amount": "\u20b980,016.00",
+              "type": "CREDIT",
+              "color": "#1cc88a"
+            },
+            {
+              "date": "09 Jul 2025",
+              "description": "Credit Interest Capitalised",
+              "category": "Bank Charges & Interest",
+              "amount": "\u20b980,768.00",
+              "type": "DEBIT",
+              "color": "#e74a3b"
+            },
+            {
+              "date": "09 Jul 2025",
+              "description": "UPI to Trend Automobiles",
+              "category": "Income",
+              "amount": "\u20b980,287.00",
+              "type": "CREDIT",
+              "color": "#1cc88a"
+            },
+            {
+              "date": "09 Jul 2025",
+              "description": "UPI to Mahesh S",
+              "category": "ATM Withdrawal",
+              "amount": "\u20b980,083.00",
+              "type": "DEBIT",
+              "color": "#e74a3b"
+            },
+            {
+              "date": "09 Jul 2025",
+              "description": "UPI to Swiggy",
+              "category": "Income",
+              "amount": "\u20b980,984.00",
+              "type": "CREDIT",
+              "color": "#1cc88a"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "test_complete_dashboard": {
+    "netWorth": {
+      "type": "net_worth",
+      "currency": "INR",
+      "summary": {
+        "net_worth": {
+          "amount": 3850000,
+          "formatted_amount": "\u20b938,50,000"
+        },
+        "total_assets": {
+          "amount": 5250000,
+          "formatted_amount": "\u20b952,50,000"
+        },
+        "total_liabilities": {
+          "amount": 1400000,
+          "formatted_amount": "\u20b914,00,000"
+        }
+      },
+      "breakdown": {
+        "assets": [
+          {
+            "category": "Real Estate",
+            "amount": 3000000,
+            "formatted_amount": "\u20b930,00,000",
+            "percentage": 57.1,
+            "color": "#2E86C1"
+          },
+          {
+            "category": "Stocks & Mutual Funds",
+            "amount": 1200000,
+            "formatted_amount": "\u20b912,00,000",
+            "percentage": 22.9,
+            "color": "#16A085"
+          },
+          {
+            "category": "Bank Deposits & Cash",
+            "amount": 800000,
+            "formatted_amount": "\u20b98,00,000",
+            "percentage": 15.2,
+            "color": "#F1C40F"
+          },
+          {
+            "category": "Gold & Other",
+            "amount": 250000,
+            "formatted_amount": "\u20b92,50,000",
+            "percentage": 4.8,
+            "color": "#AF7AC5"
+          }
+        ],
+        "liabilities": [
+          {
+            "category": "Home Loan",
+            "amount": 1250000,
+            "formatted_amount": "\u20b912,50,000",
+            "percentage": 89.3,
+            "color": "#E74C3C"
+          },
+          {
+            "category": "Car Loan",
+            "amount": 100000,
+            "formatted_amount": "\u20b91,00,000",
+            "percentage": 7.1,
+            "color": "#E67E22"
+          },
+          {
+            "category": "Credit Card Debt",
+            "amount": 50000,
+            "formatted_amount": "\u20b950,000",
+            "percentage": 3.6,
+            "color": "#D35400"
+          }
+        ]
+      },
+      "recent_items": [
+        {
+          "date": "2023-10-28",
+          "description": "Salary Credit",
+          "category": "Bank Deposits & Cash",
+          "change": {
+            "amount": 95000,
+            "formatted_amount": "+ \u20b995,000",
+            "type": "credit"
+          }
+        },
+        {
+          "date": "2023-10-26",
+          "description": "Stock Portfolio Update",
+          "category": "Stocks & Mutual Funds",
+          "change": {
+            "amount": 12500,
+            "formatted_amount": "+ \u20b912,500",
+            "type": "credit"
+          }
+        },
+        {
+          "date": "2023-10-25",
+          "description": "Home Loan EMI",
+          "category": "Home Loan",
+          "change": {
+            "amount": -28000,
+            "formatted_amount": "- \u20b928,000",
+            "type": "debit"
+          }
+        },
+        {
+          "date": "2023-10-22",
+          "description": "Credit Card Payment",
+          "category": "Credit Card Debt",
+          "change": {
+            "amount": -15000,
+            "formatted_amount": "- \u20b915,000",
+            "type": "debit"
+          }
+        },
+        {
+          "date": "2023-10-20",
+          "description": "Mutual Fund SIP",
+          "category": "Stocks & Mutual Funds",
+          "change": {
+            "amount": 10000,
+            "formatted_amount": "+ \u20b910,000",
+            "type": "credit"
+          }
+        }
+      ]
+    },
+    "creditReport": {
+      "dashboard": {
+        "title": "Credit Report",
+        "vendor": "EXPERIAN",
+        "report_date": "20 Jun 2021",
+        "summary": {
+          "title": "Credit Overview",
+          "items": [
+            {
+              "label": "Credit Score",
+              "value": "746",
+              "color": "#2196F3"
+            },
+            {
+              "label": "Total Outstanding",
+              "value": "\u20b975,000",
+              "color": "#F44336"
+            },
+            {
+              "label": "Active Accounts",
+              "value": "6 / 6",
+              "color": "#4CAF50"
+            },
+            {
+              "label": "Enquiries (Last 30 Days)",
+              "value": "4",
+              "color": "#FF9800"
+            }
+          ]
+        },
+        "breakdown": {
+          "title": "Outstanding Balance Breakdown",
+          "items": [
+            {
+              "category": "Secured Loans",
+              "value": "\u20b944,000",
+              "percentage": 59,
+              "color": "#4CAF50"
+            },
+            {
+              "category": "Unsecured Loans",
+              "value": "\u20b931,000",
+              "percentage": 41,
+              "color": "#FFC107"
+            }
+          ]
+        },
+        "recent_items": {
+          "title": "Active Credit Accounts",
+          "items": [
+            {
+              "title": "HDFC Bank",
+              "subtitle": "Auto Loan",
+              "amount": "\u20b95,000",
+              "detail": "Past Due: \u20b91,000",
+              "status": {
+                "text": "Past Due",
+                "color": "#F44336"
+              }
+            },
+            {
+              "title": "ICICI Bank",
+              "subtitle": "Personal Loan",
+              "amount": "\u20b917,000",
+              "detail": "Past Due: \u20b913,000",
+              "status": {
+                "text": "Past Due",
+                "color": "#F44336"
+              }
+            },
+            {
+              "title": "Aditya Brila Finance Limited",
+              "subtitle": "Two-Wheeler Loan",
+              "amount": "\u20b914,000",
+              "detail": "Past Due: \u20b910,000",
+              "status": {
+                "text": "Past Due",
+                "color": "#F44336"
+              }
+            },
+            {
+              "title": "Bajaj Finance",
+              "subtitle": "Consumer Loan",
+              "amount": "\u20b98,000",
+              "detail": "Sanctioned: \u20b965,000",
+              "status": {
+                "text": "Active",
+                "color": "#4CAF50"
+              }
+            },
+            {
+              "title": "Epifi Capital",
+              "subtitle": "Credit Card",
+              "amount": "\u20b911,000",
+              "detail": "Past Due: \u20b97,000",
+              "status": {
+                "text": "Past Due",
+                "color": "#F44336"
+              }
+            },
+            {
+              "title": "Mannapuram Finance",
+              "subtitle": "Gold Loan",
+              "amount": "\u20b920,000",
+              "detail": "Past Due: \u20b916,000",
+              "status": {
+                "text": "Past Due",
+                "color": "#F44336"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "investments": {
+      "summary": {
+        "totalValue": "\u20b91,18,127.05",
+        "totalItems": 13,
+        "valueChange": {
+          "amount": "\u20b91,18,127.05",
+          "percentage": 100,
+          "isPositive": true
+        }
+      },
+      "breakdown": [
+        {
+          "category": "Stocks",
+          "value": "\u20b969,573.52",
+          "percentage": 58.9,
+          "color": "#50E3C2"
+        },
+        {
+          "category": "Mutual Funds",
+          "value": "\u20b948,553.53",
+          "percentage": 41.1,
+          "color": "#4A90E2"
+        }
+      ],
+      "recentItems": [
+        {
+          "name": "INE916P01025",
+          "date": "2025-07-15",
+          "amount": "\u20b9200.00",
+          "type": "Stock",
+          "status": "Sold"
+        },
+        {
+          "name": "INE916P01025",
+          "date": "2025-07-15",
+          "amount": "\u20b96.00",
+          "type": "Stock",
+          "status": "Purchased"
+        },
+        {
+          "name": "INE040A01034",
+          "date": "2025-07-13",
+          "amount": "\u20b914,000.00",
+          "type": "Stock",
+          "status": "Purchased"
+        },
+        {
+          "name": "INE040A01034",
+          "date": "2025-07-13",
+          "amount": "\u20b92,900.44",
+          "type": "Stock",
+          "status": "Purchased"
+        },
+        {
+          "name": "INE916P01025",
+          "date": "2025-07-11",
+          "amount": "\u20b955.00",
+          "type": "Stock",
+          "status": "Purchased"
+        }
+      ]
+    },
+    "banking": {
+      "accountSummary": {
+        "totalBalance": 2047.0,
+        "monthlyInflow": 1206796.0,
+        "monthlyOutflow": 1206950.0,
+        "netCashFlow": -154.0
+      },
+      "bankAccounts": [
+        {
+          "bank": "HDFC Bank",
+          "balance": 2047.0,
+          "accountType": "Multiple Accounts",
+          "recentTransactions": 30,
+          "lastUpdated": "2025-07-09"
+        }
+      ],
+      "spendingCategories": [
+        {
+          "category": "Card Payment",
+          "amount": 883532.0,
+          "percentage": 36.6,
+          "color": "#FF6B6B"
+        },
+        {
+          "category": "Others",
+          "amount": 644684.0,
+          "percentage": 26.7,
+          "color": "#4ECDC4"
+        },
+        {
+          "category": "Atm",
+          "amount": 402172.0,
+          "percentage": 16.7,
+          "color": "#45B7D1"
+        },
+        {
+          "category": "Ft",
+          "amount": 242071.0,
+          "percentage": 10.0,
+          "color": "#96CEB4"
+        },
+        {
+          "category": "Cash",
+          "amount": 241287.0,
+          "percentage": 10.0,
+          "color": "#FFEAA7"
+        }
+      ],
+      "recentTransactions": [
+        {
+          "date": "2025-07-09",
+          "description": "UPI-SHEETAL RAVINDRA DA-SHEETAL.DAMBAL@OKSBI-SBIN0...",
+          "amount": 80085.0,
+          "type": "Credit",
+          "category": "CARD_PAYMENT",
+          "balance": -79109.0
+        },
+        {
+          "date": "2025-07-09",
+          "description": "UPI-DREAMPLUG TECHNOLOGI-CRED@AXISB-UTIB0000114-00...",
+          "amount": 80677.0,
+          "type": "Debit",
+          "category": "FT",
+          "balance": 1568.0
+        },
+        {
+          "date": "2025-07-09",
+          "description": "UPI-RAVISHANKAR-Q78015288@YBL-YESB0YBLUPI-12353572...",
+          "amount": 80267.0,
+          "type": "Credit",
+          "category": "OTHERS",
+          "balance": -79180.0
+        },
+        {
+          "date": "2025-07-09",
+          "description": "UPI-HARDIK  AGRAWAL-9971488189.NIYO@IDFCBANK-IDFB0...",
+          "amount": 80156.0,
+          "type": "Debit",
+          "category": "OTHERS",
+          "balance": 976.0
+        },
+        {
+          "date": "2025-07-09",
+          "description": "UPI-UBER INDIA SYSTEMS P-UBERRIDES@HDFCBANK-HDFC00...",
+          "amount": 80565.0,
+          "type": "Debit",
+          "category": "OTHERS",
+          "balance": 1087.0
+        },
+        {
+          "date": "2025-07-09",
+          "description": "UPI-ABDESH KUMAR YADAV-PAYTMQR28100505010117UM15XI...",
+          "amount": 80016.0,
+          "type": "Credit",
+          "category": "CASH",
+          "balance": -79478.0
+        },
+        {
+          "date": "2025-07-09",
+          "description": "CREDIT INTEREST CAPITALISED",
+          "amount": 80768.0,
+          "type": "Debit",
+          "category": "OTHERS",
+          "balance": 538.0
+        },
+        {
+          "date": "2025-07-09",
+          "description": "UPI-TREND AUTOMOBILES-105302393@CNRB-CNRB0001074-0...",
+          "amount": 80287.0,
+          "type": "Credit",
+          "category": "CASH",
+          "balance": -80230.0
+        },
+        {
+          "date": "2025-07-09",
+          "description": "UPI-MAHESH S-Q60573690@YBL-KKBK0008043-10455820924...",
+          "amount": 80083.0,
+          "type": "Debit",
+          "category": "ATM",
+          "balance": 57.0
+        },
+        {
+          "date": "2025-07-09",
+          "description": "UPI-SWIGGY-SWIGGY8@YBL-YESB0YBLUPI-101057836776-PA...",
+          "amount": 80984.0,
+          "type": "Credit",
+          "category": "CASH",
+          "balance": -80026.0
+        }
+      ],
+      "processingMethod": "direct_calculation",
+      "dataSource": "mcp_banking_api"
+    },
+    "epf": {
+      "summary": {
+        "title": "EPF Balance",
+        "total_balance": 211111,
+        "currency": "INR",
+        "additional_info": [
+          {
+            "label": "Pension Contribution",
+            "value": 1000000,
+            "currency": "INR"
+          }
+        ]
+      },
+      "breakdown": [
+        {
+          "category": "KARZA TECHNOLOGIES PRIVATE LIMITED",
+          "value": 200000,
+          "percentage": 94.74,
+          "color": "#4A90E2"
+        },
+        {
+          "category": "TSS CONSULTANCY PRIVATE LIMITED",
+          "value": 11111,
+          "percentage": 5.26,
+          "color": "#F5A623"
+        }
+      ],
+      "recent_items": [
+        {
+          "title": "KARZA TECHNOLOGIES PRIVATE LIMITED",
+          "subtitle": "Member ID: MHBANXXXXXXXXXXXXXXXXX",
+          "amount": 200000,
+          "currency": "INR",
+          "date": "24-03-2021",
+          "type": "Employment Record"
+        },
+        {
+          "title": "TSS CONSULTANCY PRIVATE LIMITED",
+          "subtitle": "Member ID: MHBAN*****************",
+          "amount": 11111,
+          "currency": "INR",
+          "date": "07-08-2018",
+          "type": "Employment Record"
+        }
+      ]
+    },
+    "lastUpdated": "2025-07-26T21:32:24.538930",
+    "dataFreshness": {
+      "netWorth": "real-time",
+      "creditReport": "real-time",
+      "investments": "real-time",
+      "banking": "real-time",
+      "epf": "real-time"
+    }
+  }
+}
