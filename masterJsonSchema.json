@@ -1,0 +1,773 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FiGenie Master Data Schema",
+  "description": "Complete data schema for FiGenie financial dashboard application covering all pages and components",
+  "type": "object",
+  "required": [
+    "status",
+    "timestamp",
+    "financialOverview",
+    "bankingData",
+    "investmentData",
+    "historicalData",
+    "aiGeneratedInsights"
+  ],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["success", "error"],
+      "description": "API response status"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data generation timestamp"
+    },
+    "financialOverview": {
+      "type": "object",
+      "description": "Main dashboard financial overview data",
+      "required": ["creditScore", "netWorth", "financialHealthScore"],
+      "properties": {
+        "creditScore": {
+          "type": "object",
+          "required": ["score", "rating", "maxScore"],
+          "properties": {
+            "score": {
+              "type": "number",
+              "minimum": 300,
+              "maximum": 900,
+              "description": "Current credit score"
+            },
+            "rating": {
+              "type": "string",
+              "enum": ["Poor", "Fair", "Good", "Very Good", "Excellent"],
+              "description": "Credit score rating"
+            },
+            "ratingDescription": {
+              "type": "string",
+              "description": "Detailed rating description"
+            },
+            "confidenceLevel": {
+              "type": "string",
+              "enum": ["Low", "Medium", "High"],
+              "description": "Confidence level of the score"
+            },
+            "trend": {
+              "type": "string",
+              "enum": ["Improving", "Stable", "Declining"],
+              "description": "Score trend"
+            },
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$",
+              "description": "Color code for UI display"
+            },
+            "maxScore": {
+              "type": "number",
+              "default": 900,
+              "description": "Maximum possible credit score"
+            },
+            "percentile": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Percentile ranking"
+            }
+          }
+        },
+        "netWorth": {
+          "type": "object",
+          "required": ["total", "totalAssets", "totalLiabilities"],
+          "properties": {
+            "total": {
+              "type": "number",
+              "description": "Total net worth"
+            },
+            "totalAssets": {
+              "type": "number",
+              "description": "Total assets value"
+            },
+            "totalLiabilities": {
+              "type": "number",
+              "description": "Total liabilities"
+            },
+            "debtToAssetRatio": {
+              "type": "number",
+              "description": "Debt to asset ratio percentage"
+            },
+            "monthlyGrowth": {
+              "type": "object",
+              "properties": {
+                "percentage": {
+                  "type": "number",
+                  "description": "Monthly growth percentage"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["up", "down", "stable"]
+                },
+                "trend": {
+                  "type": "string",
+                  "enum": ["positive", "negative", "neutral"]
+                }
+              }
+            },
+            "currency": {
+              "type": "string",
+              "default": "INR",
+              "description": "Currency code"
+            }
+          }
+        },
+        "financialHealthScore": {
+          "type": "object",
+          "required": ["overall", "components", "status"],
+          "properties": {
+            "overall": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Overall financial health score"
+            },
+            "components": {
+              "type": "object",
+              "properties": {
+                "creditHealth": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "wealthAccumulation": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "debtManagement": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "investmentPerformance": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100
+                }
+              }
+            },
+            "status": {
+              "type": "string",
+              "enum": ["Poor", "Fair", "Good", "Very Good", "Excellent"]
+            },
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            }
+          }
+        }
+      }
+    },
+    "bankingData": {
+      "type": "object",
+      "description": "Banking page specific data",
+      "required": ["accountSummary", "monthlyTrends", "spendingCategories", "bankAccounts"],
+      "properties": {
+        "accountSummary": {
+          "type": "object",
+          "required": ["totalBalance", "monthlyInflow", "monthlyOutflow", "netCashFlow"],
+          "properties": {
+            "totalBalance": {
+              "type": "number",
+              "description": "Total balance across all accounts"
+            },
+            "monthlyInflow": {
+              "type": "number",
+              "description": "Monthly income/inflow"
+            },
+            "monthlyOutflow": {
+              "type": "number",
+              "description": "Monthly expenses/outflow"
+            },
+            "netCashFlow": {
+              "type": "number",
+              "description": "Net cash flow (inflow - outflow)"
+            }
+          }
+        },
+        "monthlyTrends": {
+          "type": "object",
+          "required": ["summary", "chartData"],
+          "properties": {
+            "summary": {
+              "type": "object",
+              "properties": {
+                "averageCredit": {
+                  "type": "number",
+                  "description": "Average credit amount"
+                },
+                "averageDebit": {
+                  "type": "number",
+                  "description": "Average debit amount"
+                },
+                "topSpendingCategory": {
+                  "type": "string",
+                  "description": "Top spending category"
+                },
+                "inflowTransactions": {
+                  "type": "number",
+                  "description": "Number of inflow transactions"
+                },
+                "outflowTransactions": {
+                  "type": "number",
+                  "description": "Number of outflow transactions"
+                }
+              }
+            },
+            "chartData": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "month": {
+                    "type": "string",
+                    "description": "Month name"
+                  },
+                  "inflow": {
+                    "type": "number",
+                    "description": "Monthly inflow amount"
+                  },
+                  "outflow": {
+                    "type": "number",
+                    "description": "Monthly outflow amount"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "spendingCategories": {
+          "type": "array",
+          "description": "Spending breakdown by categories",
+          "items": {
+            "type": "object",
+            "required": ["category", "amount", "percentage", "color"],
+            "properties": {
+              "category": {
+                "type": "string",
+                "description": "Spending category name"
+              },
+              "amount": {
+                "type": "number",
+                "description": "Amount spent in this category"
+              },
+              "percentage": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100,
+                "description": "Percentage of total spending"
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[0-9A-Fa-f]{6}$",
+                "description": "Color for chart display"
+              }
+            }
+          }
+        },
+        "bankAccounts": {
+          "type": "array",
+          "description": "List of bank accounts",
+          "items": {
+            "type": "object",
+            "required": ["id", "bankName", "accountType", "accountNumber", "balance", "status"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Unique account identifier"
+              },
+              "bankName": {
+                "type": "string",
+                "description": "Bank name"
+              },
+              "accountType": {
+                "type": "string",
+                "enum": ["Savings", "Current", "Fixed Deposit", "Recurring Deposit"],
+                "description": "Type of account"
+              },
+              "accountNumber": {
+                "type": "string",
+                "description": "Masked account number"
+              },
+              "balance": {
+                "type": "number",
+                "description": "Current account balance"
+              },
+              "status": {
+                "type": "string",
+                "enum": ["Active", "Inactive", "Closed"],
+                "description": "Account status"
+              },
+              "interestRate": {
+                "type": "number",
+                "description": "Interest rate (if applicable)"
+              },
+              "lastActivity": {
+                "type": "string",
+                "format": "date",
+                "description": "Last activity date"
+              }
+            }
+          }
+        }
+      }
+    },
+    "investmentData": {
+      "type": "object",
+      "description": "Investment analysis page data",
+      "required": ["portfolioSummary", "assetAllocation", "epfSummary", "topHoldings", "recentTransactions"],
+      "properties": {
+        "portfolioSummary": {
+          "type": "object",
+          "required": ["totalValue", "totalInvested", "totalReturns", "returnPercentage", "xirr"],
+          "properties": {
+            "totalValue": {
+              "type": "number",
+              "description": "Total current portfolio value"
+            },
+            "totalInvested": {
+              "type": "number",
+              "description": "Total amount invested"
+            },
+            "totalReturns": {
+              "type": "number",
+              "description": "Total returns (profit/loss)"
+            },
+            "returnPercentage": {
+              "type": "number",
+              "description": "Return percentage"
+            },
+            "xirr": {
+              "type": "number",
+              "description": "Extended Internal Rate of Return"
+            }
+          }
+        },
+        "assetAllocation": {
+          "type": "array",
+          "description": "Investment asset allocation",
+          "items": {
+            "type": "object",
+            "required": ["type", "value", "percentage", "color"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Asset type (Stocks, Mutual Funds, etc.)"
+              },
+              "value": {
+                "type": "number",
+                "description": "Current value of this asset type"
+              },
+              "percentage": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100,
+                "description": "Percentage of total portfolio"
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[0-9A-Fa-f]{6}$",
+                "description": "Color for chart display"
+              }
+            }
+          }
+        },
+        "epfSummary": {
+          "type": "object",
+          "required": ["dataType", "summary"],
+          "properties": {
+            "dataType": {
+              "type": "string",
+              "enum": ["epf"],
+              "description": "Data type identifier"
+            },
+            "summary": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "description": "EPF summary title"
+                },
+                "totalBalance": {
+                  "type": "string",
+                  "description": "Total EPF balance (formatted)"
+                },
+                "pensionBalance": {
+                  "type": "string",
+                  "description": "Pension balance (formatted)"
+                },
+                "lastUpdated": {
+                  "type": "string",
+                  "description": "Last update information"
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "label": {
+                        "type": "string",
+                        "description": "Item label"
+                      },
+                      "value": {
+                        "type": "string",
+                        "description": "Item value (formatted)"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "topHoldings": {
+          "type": "array",
+          "description": "Top investment holdings",
+          "items": {
+            "type": "object",
+            "required": ["name", "type", "currentValue", "investedValue", "returns", "returnPercentage", "units"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Investment name/identifier"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["Stock", "Mutual Fund", "ETF", "Bond"],
+                "description": "Investment type"
+              },
+              "currentValue": {
+                "type": "number",
+                "description": "Current market value"
+              },
+              "investedValue": {
+                "type": "number",
+                "description": "Amount invested"
+              },
+              "returns": {
+                "type": "number",
+                "description": "Profit/loss amount"
+              },
+              "returnPercentage": {
+                "type": "number",
+                "description": "Return percentage"
+              },
+              "units": {
+                "type": "number",
+                "description": "Number of units held"
+              }
+            }
+          }
+        },
+        "recentTransactions": {
+          "type": "array",
+          "description": "Recent investment transactions",
+          "items": {
+            "type": "object",
+            "required": ["date", "type", "scheme", "amount", "units"],
+            "properties": {
+              "date": {
+                "type": "string",
+                "format": "date",
+                "description": "Transaction date"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["Buy", "Sell"],
+                "description": "Transaction type"
+              },
+              "scheme": {
+                "type": "string",
+                "description": "Investment scheme/name"
+              },
+              "amount": {
+                "type": "number",
+                "description": "Transaction amount"
+              },
+              "units": {
+                "type": "number",
+                "description": "Number of units"
+              },
+              "nav": {
+                "type": ["number", "null"],
+                "description": "Net Asset Value at transaction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "wealthProfile": {
+      "type": "object",
+      "description": "Wealth profile data for main dashboard",
+      "required": ["assetBreakdown"],
+      "properties": {
+        "assetBreakdown": {
+          "type": "array",
+          "description": "Asset breakdown for main dashboard",
+          "items": {
+            "type": "object",
+            "required": ["category", "value", "percentage", "color"],
+            "properties": {
+              "category": {
+                "type": "string",
+                "description": "Asset category name"
+              },
+              "value": {
+                "type": "number",
+                "description": "Asset value"
+              },
+              "percentage": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100,
+                "description": "Percentage of total assets"
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[0-9A-Fa-f]{6}$",
+                "description": "Color for visualization"
+              },
+              "growth": {
+                "type": "object",
+                "properties": {
+                  "monthly": {
+                    "type": "number",
+                    "description": "Monthly growth percentage"
+                  },
+                  "yearly": {
+                    "type": "number",
+                    "description": "Yearly growth percentage"
+                  }
+                }
+              },
+              "liquidity": {
+                "type": "string",
+                "enum": ["Immediate", "High", "Medium", "Low"],
+                "description": "Liquidity level"
+              }
+            }
+          }
+        }
+      }
+    },
+    "creditReport": {
+      "type": "object",
+      "description": "Credit report data for dashboard",
+      "required": ["paymentHistory"],
+      "properties": {
+        "paymentHistory": {
+          "type": "object",
+          "properties": {
+            "onTimePayments": {
+              "type": "number",
+              "description": "Percentage of on-time payments"
+            },
+            "latePayments": {
+              "type": "number",
+              "description": "Percentage of late payments"
+            },
+            "onTimePercentage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "paymentTrend": {
+              "type": "string",
+              "enum": ["Improving", "Stable", "Declining"]
+            },
+            "last12Months": {
+              "type": "object",
+              "properties": {
+                "onTime": {
+                  "type": "number"
+                },
+                "late30Days": {
+                  "type": "number"
+                },
+                "late60Days": {
+                  "type": "number"
+                },
+                "late90Days": {
+                  "type": "number"
+                },
+                "late120PlusDays": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "historicalData": {
+      "type": "object",
+      "description": "Historical data for trends and charts",
+      "required": ["netWorth", "creditScore", "monthlyCashFlow"],
+      "properties": {
+        "netWorth": {
+          "type": "array",
+          "description": "Historical net worth data",
+          "items": {
+            "type": "object",
+            "properties": {
+              "month": {
+                "type": "string",
+                "description": "Month name"
+              },
+              "value": {
+                "type": "number",
+                "description": "Net worth value"
+              }
+            }
+          }
+        },
+        "creditScore": {
+          "type": "array",
+          "description": "Historical credit score data",
+          "items": {
+            "type": "object",
+            "properties": {
+              "month": {
+                "type": "string",
+                "description": "Month name"
+              },
+              "score": {
+                "type": "number",
+                "description": "Credit score"
+              }
+            }
+          }
+        },
+        "monthlyCashFlow": {
+          "type": "array",
+          "description": "Historical cash flow data",
+          "items": {
+            "type": "object",
+            "properties": {
+              "month": {
+                "type": "string",
+                "description": "Month name"
+              },
+              "surplus": {
+                "type": "number",
+                "description": "Monthly surplus"
+              },
+              "income": {
+                "type": "number",
+                "description": "Monthly income"
+              },
+              "expenses": {
+                "type": "number",
+                "description": "Monthly expenses"
+              }
+            }
+          }
+        }
+      }
+    },
+    "monthlyFinancialSnapshot": {
+      "type": "object",
+      "description": "Current month financial snapshot",
+      "required": ["savingsRate"],
+      "properties": {
+        "income": {
+          "type": "object",
+          "properties": {
+            "salary": {
+              "type": "number"
+            },
+            "investments": {
+              "type": "number"
+            },
+            "other": {
+              "type": "number"
+            },
+            "total": {
+              "type": "number"
+            }
+          }
+        },
+        "expenses": {
+          "type": "object",
+          "properties": {
+            "emi": {
+              "type": "number"
+            },
+            "living": {
+              "type": "number"
+            },
+            "utilities": {
+              "type": "number"
+            },
+            "others": {
+              "type": "number"
+            },
+            "total": {
+              "type": "number"
+            }
+          }
+        },
+        "surplus": {
+          "type": "number",
+          "description": "Monthly surplus amount"
+        },
+        "savingsRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Savings rate percentage"
+        }
+      }
+    },
+    "aiGeneratedInsights": {
+      "type": "object",
+      "description": "AI-generated insights for all components",
+      "required": ["overallProfile", "netWorthInsights", "creditInsights"],
+      "properties": {
+        "overallProfile": {
+          "type": "string",
+          "description": "Overall financial profile insight"
+        },
+        "netWorthInsights": {
+          "type": "array",
+          "description": "Net worth related insights",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 3
+        },
+        "creditInsights": {
+          "type": "array",
+          "description": "Credit related insights",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "bankingInsights": {
+          "type": "array",
+          "description": "Banking specific insights",
+          "items": {
+            "type": "string"
+          }
+        },
+        "investmentInsights": {
+          "type": "array",
+          "description": "Investment specific insights",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

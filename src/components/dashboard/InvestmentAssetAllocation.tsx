@@ -12,14 +12,14 @@ interface Asset {
   color: string
 }
 
-interface AssetAllocationProps {
-  assets: any[]
+interface InvestmentAssetAllocationProps {
+  assetData: Asset[]
   totalValue: number
   insight?: string
 }
 
-export const AssetAllocation: React.FC<AssetAllocationProps> = ({
-  assets,
+export const InvestmentAssetAllocation: React.FC<InvestmentAssetAllocationProps> = ({
+  assetData,
   totalValue,
   insight
 }) => {
@@ -45,9 +45,6 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
     return `₹${absAmount.toLocaleString()}`
   }
 
-  // Ensure assets is an array and has data
-  const assetData = Array.isArray(assets) ? assets : []
-
   // Calculate donut segments
   let currentAngle = 0
   const segments = assetData.map((asset, index) => {
@@ -60,7 +57,7 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
   // Draw particles effect
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas || segments.length === 0) return
+    if (!canvas) return
 
     const ctx = canvas.getContext('2d')
     if (!ctx) return
@@ -149,7 +146,8 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
                 <div className="flex items-center gap-2 min-w-0">
                   <p className="text-xs font-medium text-white">AI Insight:</p>
                   <p className="text-xs text-gray-300">
-                    {insight || "Diversified portfolio with balanced asset allocation across different investment types."}
+                    Stocks ({assetData[0]?.percentage?.toFixed(1) || '0'}%) outperforming MFs ({assetData[1]?.percentage?.toFixed(1) || '0'}%). 
+                    Consider rebalancing for diversification.
                   </p>
                 </div>
               </div>
@@ -221,7 +219,7 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
                         {asset.type}
                       </div>
                       <div className="text-gray-400 text-xs">
-                        {asset.percentage?.toFixed(1) || '0'}%
+                        {asset.percentage.toFixed(1)}%
                       </div>
                     </div>
                   </div>

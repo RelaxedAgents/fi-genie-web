@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion"
-import { Home, Banknote, FileText, TrendingUp } from "lucide-react"
+import { Home, Banknote, TrendingUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface NavItem {
@@ -16,7 +16,6 @@ interface NavItem {
 const navItems: NavItem[] = [
   { name: "Home", path: "/dashboard", icon: Home },
   { name: "Banking", path: "/dashboard/banking", icon: Banknote },
-  { name: "Credit Report", path: "/dashboard/credit-report", icon: FileText },
   { name: "Investment Analysis", path: "/dashboard/investment-analysis", icon: TrendingUp },
 ]
 
