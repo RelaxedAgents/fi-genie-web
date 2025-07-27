@@ -9,10 +9,10 @@ import { CashFlowRiver } from "@/components/dashboard/CashFlowRiver"
 import { AssetAllocation } from "@/components/dashboard/AssetAllocation"
 import { GrowthTrends } from "@/components/dashboard/GrowthTrends"
 import { motion, Variants } from "framer-motion"
-import creditData from "@/../../ResponseJson/creditResponse.json"
+import masterData from "@/../../sampleMasterData.json"
 
 export default function DashboardPage() {
-  const [data, setData] = useState(creditData)
+  const [data, setData] = useState(masterData)
   const [selectedInsight, setSelectedInsight] = useState<string | null>(null)
 
   const containerVariants: Variants = {
