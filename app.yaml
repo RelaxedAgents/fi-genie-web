@@ -1,0 +1,18 @@
+runtime: nodejs20
+
+handlers:
+  - url: /_next/static
+    static_dir: .next/static
+    secure: always
+
+  - url: /(.*\.(ico|jpg|jpeg|png|gif|woff|woff2|ttf|svg))$
+    static_files: public/\1
+    upload: public/.*\.(ico|jpg|jpeg|png|gif|woff|woff2|ttf|svg)$
+    secure: always
+
+  - url: /.*
+    script: auto
+    secure: always
+
+env_variables:
+  NODE_ENV: "production"
