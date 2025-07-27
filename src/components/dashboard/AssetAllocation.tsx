@@ -25,15 +25,24 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
 }) => {
   const [hoveredSegment, setHoveredSegment] = useState<number | null>(null)
   const [showInsight, setShowInsight] = useState(false)
-  const [displayValue, setDisplayValue] = useState(0)
+  const [displayValue, setDisplayValue] = useState(totalValue)
+  const [isHydrated, setIsHydrated] = useState(false)
 
-  // Animate total value
+  // Mark as hydrated after mount
   useEffect(() => {
+    setIsHydrated(true)
+  }, [])
+
+  // Animate total value only after hydration
+  useEffect(() => {
+    if (!isHydrated) return
+
     const duration = 2000
     const steps = 60
     const increment = totalValue / steps
     let current = 0
 
+    setDisplayValue(0) // Start animation from 0
     const timer = setInterval(() => {
       current += increment
       if (current >= totalValue) {
@@ -45,7 +54,7 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
     }, duration / steps)
 
     return () => clearInterval(timer)
-  }, [totalValue])
+  }, [totalValue, isHydrated])
 
   const formatCurrency = (value: number) => {
     const absAmount = Math.abs(value)
@@ -134,15 +143,15 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
           {/* Total Assets Display */}
           <motion.div 
             className="text-center mb-4"
-            initial={{ opacity: 0, y: -20 }}
+            initial={isHydrated ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
+            transition={isHydrated ? { delay: 0.3, duration: 0.5 } : { duration: 0 }}
           >
             <motion.p 
               className="text-3xl font-bold text-white"
-              initial={{ scale: 0 }}
+              initial={isHydrated ? { scale: 0 } : { scale: 1 }}
               animate={{ scale: 1 }}
-              transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+              transition={isHydrated ? { delay: 0.5, type: "spring", stiffness: 200 } : { duration: 0 }}
             >
               {formatCurrency(displayValue)}
             </motion.p>
@@ -154,9 +163,9 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
             <motion.svg
               className="w-56 h-56"
               viewBox="-120 -120 240 240"
-              initial={{ scale: 0, rotate: -180 }}
+              initial={isHydrated ? { scale: 0, rotate: -180 } : { scale: 1, rotate: 0 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ duration: 1, type: "spring", stiffness: 100 }}
+              transition={isHydrated ? { duration: 1, type: "spring", stiffness: 100 } : { duration: 0 }}
             >
               {/* Background circle */}
               <circle
@@ -181,15 +190,15 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
                     stroke="rgba(255,255,255,0.1)"
                     strokeWidth="2"
                     style={{ cursor: 'pointer' }}
-                    initial={{ scale: 0 }}
+                    initial={isHydrated ? { scale: 0 } : { scale: 1 }}
                     animate={{
                       scale: hoveredSegment === segment.index ? 1.05 : 1,
                       filter: hoveredSegment === segment.index ? 'brightness(1.3)' : 'brightness(1)'
                     }}
                     transition={{ 
                       scale: {
-                        delay: segment.index * 0.1,
-                        duration: 0.5,
+                        delay: isHydrated ? segment.index * 0.1 : 0,
+                        duration: isHydrated ? 0.5 : 0,
                         type: "spring",
                         stiffness: 200
                       },
@@ -248,9 +257,9 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
               <motion.div
                 key={index}
                 className="flex items-center gap-1.5 min-w-0"
-                initial={{ opacity: 0, y: 20 }}
+                initial={isHydrated ? { opacity: 0, y: 20 } : { opacity: 1, y: 0 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 + index * 0.1, duration: 0.3 }}
+                transition={isHydrated ? { delay: 0.8 + index * 0.1, duration: 0.3 } : { duration: 0 }}
               >
                 <motion.div 
                   className="w-3 h-3 rounded-full flex-shrink-0"
