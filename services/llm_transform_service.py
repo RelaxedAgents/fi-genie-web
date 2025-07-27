@@ -1717,8 +1717,19 @@ Use colors: #FF6B6B, #4ECDC4, #45B7D1, #96CEB4, #FFEAA7."""
                         except (ValueError, TypeError):
                             continue
                 
+                # FIXED: Handle cases where invested_value is unreasonably small
+                # This happens with ETFs where transaction data might be incomplete
+                if invested_value < (current_value * 0.01):  # Less than 1% of current value
+                    print(f"⚠️ [HOLDINGS] Unreasonable invested value {invested_value} for {stock.get('isin')}, using current value as estimate")
+                    invested_value = current_value  # Use current value as fallback
+                
                 returns = current_value - invested_value
                 return_pct = (returns / invested_value * 100) if invested_value > 0 else 0
+                
+                # Cap return percentage at reasonable limits
+                if abs(return_pct) > 1000:  # More than 1000% gain/loss is unrealistic
+                    print(f"⚠️ [HOLDINGS] Capping unrealistic return {return_pct}% for {stock.get('isin')}")
+                    return_pct = 1000 if return_pct > 0 else -1000
                 
                 # Get proper stock name from issuerName, not ISIN
                 stock_name = stock.get("issuerName", stock.get("isinDescription", stock.get("isin", "Unknown")))
@@ -2077,8 +2088,11 @@ Keep insights actionable, specific, under 100 characters each."""
 
 {data_str}
 
+Generate a concise, impactful insight for the credit score section.
+Generate 2 prioritized actions for the credit score section.
+
 Return JSON object with:
-- creditInsights: array of 2 strings (credit improvement suggestions)
+- creditInsights: array of 2 strings (prioritized credit improvement actions)
 
 Keep insights actionable, specific, under 100 characters each."""
         
