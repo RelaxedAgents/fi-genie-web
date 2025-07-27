@@ -1,19 +1,19 @@
 "use client"
 
-import React, { useEffect, useState, useRef } from "react"
+import React, { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { PieChart, Info } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Asset {
-  type: string
+  category: string
   value: number
   percentage: number
   color: string
 }
 
 interface AssetAllocationProps {
-  assets: any[]
+  assets: Asset[]
   totalValue: number
   insight?: string
 }
@@ -24,16 +24,28 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
   insight
 }) => {
   const [hoveredSegment, setHoveredSegment] = useState<number | null>(null)
-  const [rotation, setRotation] = useState(0)
   const [showInsight, setShowInsight] = useState(false)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [displayValue, setDisplayValue] = useState(0)
 
+  // Animate total value
   useEffect(() => {
-    const interval = setInterval(() => {
-      setRotation(prev => (prev + 0.5) % 360)
-    }, 50)
-    return () => clearInterval(interval)
-  }, [])
+    const duration = 2000
+    const steps = 60
+    const increment = totalValue / steps
+    let current = 0
+
+    const timer = setInterval(() => {
+      current += increment
+      if (current >= totalValue) {
+        setDisplayValue(totalValue)
+        clearInterval(timer)
+      } else {
+        setDisplayValue(Math.floor(current))
+      }
+    }, duration / steps)
+
+    return () => clearInterval(timer)
+  }, [totalValue])
 
   const formatCurrency = (value: number) => {
     const absAmount = Math.abs(value)
@@ -45,79 +57,31 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
     return `₹${absAmount.toLocaleString()}`
   }
 
-  // Ensure assets is an array and has data
-  const assetData = Array.isArray(assets) ? assets : []
-
-  // Calculate donut segments
-  let currentAngle = 0
-  const segments = assetData.map((asset, index) => {
-    const startAngle = currentAngle
-    const endAngle = currentAngle + (asset.percentage / 100) * 360
-    currentAngle = endAngle
+  // Calculate pie segments
+  let cumulativePercentage = 0
+  const segments = assets.map((asset, index) => {
+    const startAngle = (cumulativePercentage * 360) / 100
+    const endAngle = ((cumulativePercentage + asset.percentage) * 360) / 100
+    cumulativePercentage += asset.percentage
     return { ...asset, startAngle, endAngle, index }
   })
 
-  // Draw particles effect
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas || segments.length === 0) return
+  // Convert angle to radians
+  const angleToRadians = (angle: number) => (angle * Math.PI) / 180
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+  // Create path for each segment
+  const createPath = (startAngle: number, endAngle: number, radius: number) => {
+    const start = angleToRadians(startAngle - 90)
+    const end = angleToRadians(endAngle - 90)
+    const largeArc = endAngle - startAngle > 180 ? 1 : 0
 
-    const particles: Array<{
-      x: number
-      y: number
-      vx: number
-      vy: number
-      size: number
-      color: string
-      life: number
-    }> = []
+    const x1 = Math.cos(start) * radius
+    const y1 = Math.sin(start) * radius
+    const x2 = Math.cos(end) * radius
+    const y2 = Math.sin(end) * radius
 
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-      // Add new particles
-      if (Math.random() < 0.1 && particles.length < 50) {
-        const segment = segments[Math.floor(Math.random() * segments.length)]
-        const angle = (segment.startAngle + segment.endAngle) / 2 + rotation
-        const rad = (angle * Math.PI) / 180
-        const radius = 80 + Math.random() * 20
-        
-        particles.push({
-          x: canvas.width / 2 + Math.cos(rad) * radius,
-          y: canvas.height / 2 + Math.sin(rad) * radius,
-          vx: Math.cos(rad) * 0.5,
-          vy: Math.sin(rad) * 0.5,
-          size: Math.random() * 3 + 1,
-          color: segment.color || '#3B82F6',
-          life: 1
-        })
-      }
-
-      // Update and draw particles
-      particles.forEach((particle, index) => {
-        particle.x += particle.vx
-        particle.y += particle.vy
-        particle.life -= 0.01
-
-        ctx.globalAlpha = particle.life
-        ctx.fillStyle = particle.color + '40'
-        ctx.beginPath()
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2)
-        ctx.fill()
-
-        if (particle.life <= 0) {
-          particles.splice(index, 1)
-        }
-      })
-
-      requestAnimationFrame(animate)
-    }
-
-    animate()
-  }, [segments, rotation])
+    return `M 0 0 L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`
+  }
 
   return (
     <motion.div className="relative h-full">
@@ -129,110 +93,181 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
         "overflow-hidden"
       )}>
         {/* Content */}
-        <div className="relative z-10 flex flex-col h-full p-4">
+        <div className="relative z-10 p-4 h-full flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <h3 className="text-base font-medium text-gray-400">Asset Allocation</h3>
-              <p className="text-gray-500 text-sm">Investment distribution</p>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium text-gray-400">Asset Allocation</h3>
+            <div className="flex items-center gap-2">
+              <PieChart className="w-5 h-5 text-primary" />
+              {insight && (
+                <motion.button
+                  className="relative group"
+                  onMouseEnter={() => setShowInsight(true)}
+                  onMouseLeave={() => setShowInsight(false)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Info className="w-4 h-4 text-gray-400 hover:text-primary transition-colors" />
+                  
+                  <AnimatePresence>
+                    {showInsight && (
+                      <motion.div
+                        className="absolute top-full right-0 mt-2 w-64 z-50"
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="bg-gray-900/95 backdrop-blur-md rounded-lg p-3 shadow-xl border border-white/10">
+                          <p className="text-xs text-gray-300 leading-relaxed">
+                            {insight}
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+              )}
             </div>
-            <PieChart className="w-5 h-5 text-primary" />
           </div>
 
-          {/* AI Insight */}
-          <div className="mb-4">
-            <div className="bg-white/[0.06] rounded-lg p-1.5 backdrop-blur-sm border border-white/[0.08]">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                  <PieChart className="w-2.5 h-2.5 text-primary" />
-                </div>
-                <div className="flex items-center gap-2 min-w-0">
-                  <p className="text-xs font-medium text-white">AI Insight:</p>
-                  <p className="text-xs text-gray-300">
-                    {insight || "Diversified portfolio with balanced asset allocation across different investment types."}
+          {/* Total Assets Display */}
+          <motion.div 
+            className="text-center mb-4"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            <motion.p 
+              className="text-3xl font-bold text-white"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+            >
+              {formatCurrency(displayValue)}
+            </motion.p>
+            <p className="text-sm text-gray-400 mt-1">Total Assets</p>
+          </motion.div>
+
+          {/* Pie Chart */}
+          <div className="flex-1 relative flex items-center justify-center">
+            <motion.svg
+              className="w-56 h-56"
+              viewBox="-120 -120 240 240"
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ duration: 1, type: "spring", stiffness: 100 }}
+            >
+              {/* Background circle */}
+              <circle
+                cx="0"
+                cy="0"
+                r="100"
+                fill="none"
+                stroke="rgba(255,255,255,0.05)"
+                strokeWidth="2"
+              />
+
+              {/* Pie segments */}
+              {segments.map((segment) => (
+                <motion.g
+                  key={segment.index}
+                  onMouseEnter={() => setHoveredSegment(segment.index)}
+                  onMouseLeave={() => setHoveredSegment(null)}
+                >
+                  <motion.path
+                    d={createPath(segment.startAngle, segment.endAngle, 100)}
+                    fill={segment.color}
+                    stroke="rgba(255,255,255,0.1)"
+                    strokeWidth="2"
+                    style={{ cursor: 'pointer' }}
+                    initial={{ scale: 0 }}
+                    animate={{
+                      scale: hoveredSegment === segment.index ? 1.05 : 1,
+                      filter: hoveredSegment === segment.index ? 'brightness(1.3)' : 'brightness(1)'
+                    }}
+                    transition={{ 
+                      scale: {
+                        delay: segment.index * 0.1,
+                        duration: 0.5,
+                        type: "spring",
+                        stiffness: 200
+                      },
+                      filter: { duration: 0.2 }
+                    }}
+                  />
+                  
+                  {/* Hover tooltip */}
+                  {hoveredSegment === segment.index && (
+                    <motion.g
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <rect
+                        x="-50"
+                        y="-130"
+                        width="100"
+                        height="40"
+                        rx="8"
+                        fill="rgba(0,0,0,0.9)"
+                        stroke={segment.color}
+                        strokeWidth="1"
+                      />
+                      <text
+                        x="0"
+                        y="-115"
+                        textAnchor="middle"
+                        fill="white"
+                        fontSize="12"
+                        fontWeight="600"
+                      >
+                        {segment.category}
+                      </text>
+                      <text
+                        x="0"
+                        y="-100"
+                        textAnchor="middle"
+                        fill={segment.color}
+                        fontSize="14"
+                        fontWeight="700"
+                      >
+                        {segment.percentage.toFixed(1)}%
+                      </text>
+                    </motion.g>
+                  )}
+                </motion.g>
+              ))}
+            </motion.svg>
+          </div>
+
+          {/* Legend - Single line at bottom */}
+          <div className="flex items-center justify-between gap-4 mt-4 px-2">
+            {assets.map((asset, index) => (
+              <motion.div
+                key={index}
+                className="flex items-center gap-1.5 min-w-0"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 + index * 0.1, duration: 0.3 }}
+              >
+                <motion.div 
+                  className="w-3 h-3 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: asset.color }}
+                  animate={{
+                    scale: hoveredSegment === index ? 1.3 : 1
+                  }}
+                  transition={{ duration: 0.2 }}
+                />
+                <div className="flex items-center gap-1 min-w-0">
+                  <p className="text-xs text-gray-400 truncate">{asset.category}</p>
+                  <p className="text-xs font-semibold text-white flex-shrink-0">
+                    {asset.percentage.toFixed(1)}%
                   </p>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Simple Pie Chart */}
-          <div className="flex-1 flex gap-4">
-            {/* Left Half - Pie Chart */}
-            <div className="w-1/2 flex items-center justify-center">
-              <div className="relative">
-                <svg width="200" height="200" className="transform -rotate-90">
-                  {assetData.map((asset, index) => {
-                    const radius = 80
-                    const circumference = 2 * Math.PI * radius
-                    const strokeDasharray = `${(asset.percentage / 100) * circumference} ${circumference}`
-                    const strokeDashoffset = -segments.slice(0, index).reduce((acc, seg) => acc + seg.percentage, 0) * circumference / 100
-                    
-                    return (
-                      <motion.circle
-                        key={index}
-                        cx="100"
-                        cy="100"
-                        r={radius}
-                        fill="none"
-                        stroke={asset.color}
-                        strokeWidth="24"
-                        strokeDasharray={strokeDasharray}
-                        strokeDashoffset={strokeDashoffset}
-                        strokeLinecap="round"
-                        initial={{ strokeDasharray: `0 ${circumference}` }}
-                        animate={{ strokeDasharray }}
-                        transition={{ duration: 1.2, delay: index * 0.15 }}
-                      />
-                    )
-                  })}
-                </svg>
-                
-                {/* Center Text */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <div className="text-2xl font-bold text-white">
-                    {formatCurrency(totalValue)}
-                  </div>
-                  <div className="text-sm text-gray-400">Total Assets</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Half - Asset Details */}
-            <div className="w-1/2 flex flex-col justify-center space-y-3">
-              {assetData.map((asset, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
-                  className="flex items-center justify-between p-3 rounded-lg bg-white/[0.04] backdrop-blur-sm border border-white/[0.06] hover:bg-white/[0.08] transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="w-4 h-4 rounded-full flex-shrink-0"
-                      style={{ 
-                        backgroundColor: asset.color,
-                        boxShadow: `0 0 8px ${asset.color}40`
-                      }}
-                    />
-                    <div>
-                      <div className="text-white text-sm font-medium">
-                        {asset.type}
-                      </div>
-                      <div className="text-gray-400 text-xs">
-                        {asset.percentage?.toFixed(1) || '0'}%
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-white font-semibold text-sm">
-                      {formatCurrency(asset.value)}
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </div>
