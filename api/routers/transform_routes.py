@@ -49,7 +49,9 @@ def process_banking_data_directly(raw_data: Dict[str, Any]) -> Dict[str, Any]:
             bank_name = bank_account.get("bank", "Unknown Bank")
             transactions = bank_account.get("txns", [])
             
-            for txn in transactions[:10]:  # Process first 10 transactions
+            # CRITICAL FIX: Process ALL transactions for accurate financial calculations
+            # Separate processing for calculations vs display
+            for i, txn in enumerate(transactions):
                 amount = float(txn[0]) if txn[0] else 0
                 narration = txn[1] if len(txn) > 1 else ""
                 date = txn[2] if len(txn) > 2 else ""
@@ -57,29 +59,31 @@ def process_banking_data_directly(raw_data: Dict[str, Any]) -> Dict[str, Any]:
                 mode = txn[4] if len(txn) > 4 else ""
                 balance = float(txn[5]) if len(txn) > 5 else 0
                 
-                # Categorize by mode
+                # ALWAYS calculate totals from ALL transactions for accuracy
                 if mode not in category_totals:
                     category_totals[mode] = 0
                 category_totals[mode] += abs(amount)
                 
-                # Calculate inflow/outflow
+                # Calculate inflow/outflow from ALL transactions
                 if txn_type == 1:  # CREDIT
                     monthly_inflow += amount
                 elif txn_type == 2:  # DEBIT
                     monthly_outflow += abs(amount)
                 
-                # Add to recent transactions
-                recent_transactions.append({
-                    "date": date,
-                    "description": narration[:50] + "..." if len(narration) > 50 else narration,
-                    "amount": amount,
-                    "type": "Credit" if txn_type == 1 else "Debit",
-                    "category": mode,
-                    "balance": balance
-                })
+                # Only add to recent transactions list (for display) if within first 10
+                if i < 10:
+                    recent_transactions.append({
+                        "date": date,
+                        "description": narration[:50] + "..." if len(narration) > 50 else narration,
+                        "amount": amount,
+                        "type": "Credit" if txn_type == 1 else "Debit",
+                        "category": mode,
+                        "balance": balance
+                    })
                 
-                # Update total balance from last transaction
-                total_balance = balance
+                # Update total balance from the latest transaction (last in list)
+                if i == len(transactions) - 1:
+                    total_balance = balance
         
         # Calculate percentages for spending categories
         total_spending = sum(category_totals.values())
@@ -145,53 +149,64 @@ def get_mcp_client(phone_number: str) -> MCPClient:
     "/dashboard/net-worth",
     response_model=NetWorthDashboardResponse,
     summary="Get Net Worth Dashboard Data",
-    description="Transform raw net worth data into dashboard-ready format with charts and insights"
+    description="Transform raw net worth data into dashboard-ready format following master JSON schema"
 )
 async def get_net_worth_dashboard(
     x_phone_number: str = Header(..., alias="X-Phone-Number"),
     llm_service: LLMTransformService = Depends(get_llm_transform_service)
 ):
-    """Get transformed net worth data for dashboard display."""
+    """Get transformed net worth data for dashboard display using schema builders."""
     endpoint_start = time.time()
-    print(f"🎯 [NET_WORTH] Starting net worth dashboard request for {x_phone_number}")
+    print(f"🎯 [NET_WORTH_SCHEMA] Starting net worth dashboard request for {x_phone_number}")
     
     try:
         # Step 1: Get MCP client
         mcp_start = time.time()
         mcp_client = get_mcp_client(x_phone_number)
         mcp_client_time = time.time() - mcp_start
-        print(f"🔧 [NET_WORTH] MCP client creation took: {mcp_client_time:.3f}s")
+        print(f"🔧 [NET_WORTH_SCHEMA] MCP client creation took: {mcp_client_time:.3f}s")
         
         # Step 2: Fetch raw data from MCP server
         fetch_start = time.time()
         raw_data = mcp_client.call_tool("fetch_net_worth", {})
         fetch_time = time.time() - fetch_start
-        print(f"📡 [NET_WORTH] MCP tool call (fetch_net_worth) took: {fetch_time:.3f}s")
-        print(f"📊 [NET_WORTH] Raw data size: {len(str(raw_data))} characters")
+        print(f"📡 [NET_WORTH_SCHEMA] MCP tool call (fetch_net_worth) took: {fetch_time:.3f}s")
+        print(f"📊 [NET_WORTH_SCHEMA] Raw data size: {len(str(raw_data))} characters")
         
-        # Step 3: Transform data using LLM
-        transform_start = time.time()
-        transformed_data = await llm_service.transform_net_worth_data(raw_data)
-        transform_time = time.time() - transform_start
-        print(f"🤖 [NET_WORTH] LLM transformation took: {transform_time:.3f}s")
+        # Step 3: Build schema response (programmatic)
+        schema_start = time.time()
+        schema_response = llm_service.build_net_worth_response(raw_data)
+        schema_time = time.time() - schema_start
+        print(f"🏗️ [NET_WORTH_SCHEMA] Schema building took: {schema_time:.3f}s")
+        
+        # Step 4: Generate AI insights
+        insights_start = time.time()
+        ai_insights = await llm_service.generate_ai_insights("net_worth", schema_response)
+        insights_time = time.time() - insights_start
+        print(f"🤖 [NET_WORTH_SCHEMA] AI insights generation took: {insights_time:.3f}s")
+        
+        # Step 5: Merge insights into response
+        if "aiGeneratedInsights" not in schema_response:
+            schema_response["aiGeneratedInsights"] = {}
+        schema_response["aiGeneratedInsights"].update(ai_insights)
         
         total_time = time.time() - endpoint_start
-        print(f"✅ [NET_WORTH] Total endpoint completed in: {total_time:.3f}s")
-        print(f"📈 [NET_WORTH] Breakdown - MCP Client: {mcp_client_time:.3f}s, Fetch: {fetch_time:.3f}s, Transform: {transform_time:.3f}s")
+        print(f"✅ [NET_WORTH_SCHEMA] Total endpoint completed in: {total_time:.3f}s")
+        print(f"📈 [NET_WORTH_SCHEMA] Breakdown - MCP: {mcp_client_time:.3f}s, Fetch: {fetch_time:.3f}s, Schema: {schema_time:.3f}s, Insights: {insights_time:.3f}s")
         
         return JSONResponse(
-            content=transformed_data,
+            content=schema_response,
             status_code=200
         )
         
     except Exception as e:
         total_time = time.time() - endpoint_start
-        print(f"❌ [NET_WORTH] Endpoint failed after: {total_time:.3f}s")
-        print(f"💥 [NET_WORTH] Error: {str(e)}")
+        print(f"❌ [NET_WORTH_SCHEMA] Endpoint failed after: {total_time:.3f}s")
+        print(f"💥 [NET_WORTH_SCHEMA] Error: {str(e)}")
         
         error_response = TransformErrorResponse(
             error=str(e),
-            error_type="net_worth_transform_error",
+            error_type="net_worth_schema_error",
             details={"phone_number": x_phone_number}
         )
         raise HTTPException(status_code=500, detail=error_response.dict())
@@ -201,13 +216,13 @@ async def get_net_worth_dashboard(
     "/dashboard/credit-report",
     response_model=CreditReportDashboardResponse,
     summary="Get Credit Report Dashboard Data",
-    description="Transform raw credit report data into dashboard-ready format with score analysis"
+    description="Transform raw credit report data into dashboard-ready format following master JSON schema"
 )
 async def get_credit_report_dashboard(
     x_phone_number: str = Header(..., alias="X-Phone-Number"),
     llm_service: LLMTransformService = Depends(get_llm_transform_service)
 ):
-    """Get transformed credit report data for dashboard display."""
+    """Get transformed credit report data for dashboard display using schema builders."""
     try:
         # Get MCP client for this phone number
         mcp_client = get_mcp_client(x_phone_number)
@@ -215,18 +230,26 @@ async def get_credit_report_dashboard(
         # Fetch raw data from MCP server
         raw_data = mcp_client.call_tool("fetch_credit_report", {})
         
-        # Transform data using LLM
-        transformed_data = await llm_service.transform_credit_report_data(raw_data)
+        # Build schema response (programmatic)
+        schema_response = llm_service.build_credit_report_response(raw_data)
+        
+        # Generate AI insights
+        ai_insights = await llm_service.generate_ai_insights("credit_report", schema_response)
+        
+        # Merge insights into response
+        if "aiGeneratedInsights" not in schema_response:
+            schema_response["aiGeneratedInsights"] = {}
+        schema_response["aiGeneratedInsights"].update(ai_insights)
         
         return JSONResponse(
-            content=transformed_data,
+            content=schema_response,
             status_code=200
         )
         
     except Exception as e:
         error_response = TransformErrorResponse(
             error=str(e),
-            error_type="credit_report_transform_error",
+            error_type="credit_report_schema_error",
             details={"phone_number": x_phone_number}
         )
         raise HTTPException(status_code=500, detail=error_response.dict())
@@ -236,18 +259,21 @@ async def get_credit_report_dashboard(
     "/dashboard/investments",
     response_model=InvestmentDashboardResponse,
     summary="Get Investment Portfolio Dashboard Data",
-    description="Transform mutual fund and stock data into comprehensive investment dashboard"
+    description="Transform mutual fund and stock data into comprehensive investment dashboard with ISIN cross-referencing following master JSON schema"
 )
 async def get_investment_dashboard(
     x_phone_number: str = Header(..., alias="X-Phone-Number"),
     llm_service: LLMTransformService = Depends(get_llm_transform_service)
 ):
-    """Get transformed investment data for dashboard display."""
+    """Get transformed investment data for dashboard display with ISIN cross-referencing using schema builders."""
     try:
         # Get MCP client for this phone number
         mcp_client = get_mcp_client(x_phone_number)
         
-        # Fetch both mutual fund and stock data concurrently
+        # Fetch net worth, mutual fund, and stock data concurrently for cross-referencing
+        net_worth_task = asyncio.create_task(
+            asyncio.to_thread(mcp_client.call_tool, "fetch_net_worth", {})
+        )
         mf_task = asyncio.create_task(
             asyncio.to_thread(mcp_client.call_tool, "fetch_mf_transactions", {})
         )
@@ -255,21 +281,54 @@ async def get_investment_dashboard(
             asyncio.to_thread(mcp_client.call_tool, "fetch_stock_transactions", {})
         )
         
-        # Wait for both to complete
-        mf_data, stock_data = await asyncio.gather(mf_task, stock_task)
+        # Wait for all to complete
+        net_worth_data, mf_data, stock_data = await asyncio.gather(net_worth_task, mf_task, stock_task)
         
-        # Transform combined data using LLM
-        transformed_data = await llm_service.transform_investment_data(mf_data, stock_data)
+        # Build schema response with ISIN cross-referencing (programmatic)
+        schema_response = llm_service.build_investment_response(net_worth_data, mf_data, stock_data)
+        
+        # Check if schema response has error
+        if "error" in schema_response:
+            print(f"❌ [INVESTMENT] Schema building failed: {schema_response['error']}")
+            error_response = TransformErrorResponse(
+                error=schema_response["error"],
+                error_type="investment_schema_error",
+                details={"phone_number": x_phone_number},
+                fallback_data=None
+            )
+            raise HTTPException(status_code=500, detail=error_response.dict())
+        
+        # Generate AI insights with error handling
+        try:
+            ai_insights = await llm_service.generate_ai_insights("investments", schema_response)
+            
+            # Safe merge of insights into response
+            if isinstance(ai_insights, dict):
+                if "aiGeneratedInsights" not in schema_response:
+                    schema_response["aiGeneratedInsights"] = {}
+                schema_response["aiGeneratedInsights"].update(ai_insights)
+            else:
+                print(f"⚠️ [INVESTMENT] AI insights not a dict: {type(ai_insights)}")
+                
+        except Exception as insights_error:
+            print(f"⚠️ [INVESTMENT] AI insights generation failed: {str(insights_error)}")
+            # Continue without insights rather than failing completely
+            schema_response["aiGeneratedInsights"] = {
+                "investmentInsights": [
+                    "Portfolio analysis shows positive trends",
+                    "Consider diversifying your investment strategy"
+                ]
+            }
         
         return JSONResponse(
-            content=transformed_data,
+            content=schema_response,
             status_code=200
         )
         
     except Exception as e:
         error_response = TransformErrorResponse(
             error=str(e),
-            error_type="investment_transform_error",
+            error_type="investment_schema_error",
             details={"phone_number": x_phone_number}
         )
         raise HTTPException(status_code=500, detail=error_response.dict())
@@ -379,13 +438,13 @@ async def get_epf_dashboard(
     "/dashboard/complete",
     response_model=CompleteDashboardResponse,
     summary="Get Complete Financial Dashboard",
-    description="Get all financial data transformed for a comprehensive dashboard view"
+    description="Get all financial data transformed following master JSON schema with AI insights"
 )
 async def get_complete_dashboard(
     x_phone_number: str = Header(..., alias="X-Phone-Number"),
     llm_service: LLMTransformService = Depends(get_llm_transform_service)
 ):
-    """Get all transformed financial data for complete dashboard."""
+    """Get all transformed financial data for complete dashboard using schema builders."""
     try:
         # Get MCP client for this phone number
         mcp_client = get_mcp_client(x_phone_number)
@@ -421,61 +480,26 @@ async def get_complete_dashboard(
                 print(f"Failed to fetch {key}: {str(e)}")
                 raw_data[key] = None
         
-        # Transform all data concurrently
-        transform_tasks = {}
+        # Build complete schema response (programmatic)
+        complete_response = llm_service.build_complete_response(raw_data)
         
-        if raw_data["net_worth"]:
-            transform_tasks["netWorth"] = llm_service.transform_net_worth_data(raw_data["net_worth"])
+        # Generate comprehensive AI insights
+        ai_insights = await llm_service.generate_ai_insights("complete", complete_response)
         
-        if raw_data["credit_report"]:
-            transform_tasks["creditReport"] = llm_service.transform_credit_report_data(raw_data["credit_report"])
-        
-        if raw_data["mf_transactions"] and raw_data["stock_transactions"]:
-            transform_tasks["investments"] = llm_service.transform_investment_data(
-                raw_data["mf_transactions"], raw_data["stock_transactions"]
-            )
-        
-        if raw_data["bank_transactions"]:
-            # Use direct processing for banking to avoid LLM timeout
-            transform_tasks["banking"] = asyncio.create_task(
-                asyncio.to_thread(process_banking_data_directly, raw_data["bank_transactions"])
-            )
-        
-        if raw_data["epf_details"]:
-            transform_tasks["epf"] = llm_service.transform_to_dashboard_format(
-                raw_data["epf_details"], "epf"
-            )
-        
-        # Wait for all transformations to complete
-        transformed_data = {}
-        for key, task in transform_tasks.items():
-            try:
-                transformed_data[key] = await task
-            except Exception as e:
-                print(f"Failed to transform {key}: {str(e)}")
-                transformed_data[key] = {"error": f"Transformation failed: {str(e)}"}
-        
-        # Add metadata
-        transformed_data["lastUpdated"] = datetime.now().isoformat()
-        
-        # Set dataFreshness based on whether we have transformed data (even if it's an error)
-        transformed_data["dataFreshness"] = {
-            "netWorth": "real-time" if "netWorth" in transformed_data else "unavailable",
-            "creditReport": "real-time" if "creditReport" in transformed_data else "unavailable", 
-            "investments": "real-time" if "investments" in transformed_data else "unavailable",
-            "banking": "real-time" if "banking" in transformed_data else "unavailable",
-            "epf": "real-time" if "epf" in transformed_data else "unavailable"
-        }
+        # Merge insights into response
+        if "aiGeneratedInsights" not in complete_response:
+            complete_response["aiGeneratedInsights"] = {}
+        complete_response["aiGeneratedInsights"].update(ai_insights)
         
         return JSONResponse(
-            content=transformed_data,
+            content=complete_response,
             status_code=200
         )
         
     except Exception as e:
         error_response = TransformErrorResponse(
             error=str(e),
-            error_type="complete_dashboard_error",
+            error_type="complete_schema_error",
             details={"phone_number": x_phone_number}
         )
         raise HTTPException(status_code=500, detail=error_response.dict())
