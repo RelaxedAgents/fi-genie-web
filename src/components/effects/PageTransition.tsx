@@ -12,8 +12,7 @@ interface PageTransitionProps {
 const navigationOrder: Record<string, number> = {
   "/dashboard": 0,
   "/dashboard/banking": 1,
-  "/dashboard/credit-report": 2,
-  "/dashboard/investment-analysis": 3,
+  "/dashboard/investment-analysis": 2,
   "/chat": 99, // Special case - always slide from right
 }
 

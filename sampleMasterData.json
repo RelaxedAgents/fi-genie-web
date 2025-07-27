@@ -1,0 +1,432 @@
+{
+  "status": "success",
+  "timestamp": "2025-07-27T07:38:00Z",
+  "financialOverview": {
+    "creditScore": {
+      "score": 746,
+      "rating": "Good",
+      "ratingDescription": "Indicates a generally positive credit history. Lenders view this score favorably.",
+      "confidenceLevel": "High",
+      "trend": "Stable",
+      "color": "#FFD700",
+      "maxScore": 900,
+      "percentile": 82.9
+    },
+    "netWorth": {
+      "total": 658305.0,
+      "totalAssets": 722305.0,
+      "totalLiabilities": 64000.0,
+      "debtToAssetRatio": 8.86,
+      "monthlyGrowth": {
+        "percentage": 2.1,
+        "status": "up",
+        "trend": "positive"
+      },
+      "currency": "INR"
+    },
+    "financialHealthScore": {
+      "overall": 78,
+      "components": {
+        "creditHealth": 82,
+        "wealthAccumulation": 85,
+        "debtManagement": 65,
+        "investmentPerformance": 80
+      },
+      "status": "Good",
+      "color": "#32CD32"
+    }
+  },
+  "bankingData": {
+    "accountSummary": {
+      "totalBalance": 850000,
+      "monthlyInflow": 125000,
+      "monthlyOutflow": 98000,
+      "netCashFlow": 27000
+    },
+    "monthlyTrends": {
+      "summary": {
+        "averageCredit": 845.2,
+        "averageDebit": 79604.6,
+        "topSpendingCategory": "Cash",
+        "inflowTransactions": 5,
+        "outflowTransactions": 5
+      },
+      "chartData": [
+        { "month": "Jan", "inflow": 120000, "outflow": 95000 },
+        { "month": "Feb", "inflow": 118000, "outflow": 92000 },
+        { "month": "Mar", "inflow": 130000, "outflow": 101000 },
+        { "month": "Apr", "inflow": 122000, "outflow": 96000 },
+        { "month": "May", "inflow": 128000, "outflow": 105000 },
+        { "month": "Jun", "inflow": 125000, "outflow": 98000 }
+      ]
+    },
+    "spendingCategories": [
+      { "category": "Cash", "amount": 30800, "percentage": 31.4, "color": "#10b981" },
+      { "category": "Food & Dining", "amount": 21952, "percentage": 22.4, "color": "#f59e0b" },
+      { "category": "Transportation", "amount": 16464, "percentage": 16.8, "color": "#3b82f6" },
+      { "category": "Shopping", "amount": 13328, "percentage": 13.6, "color": "#8b5cf6" },
+      { "category": "Bills & Utilities", "amount": 10584, "percentage": 10.8, "color": "#f97316" },
+      { "category": "Others", "amount": 4900, "percentage": 5.0, "color": "#6b7280" }
+    ],
+    "bankAccounts": [
+      {
+        "id": "acc1",
+        "bankName": "HDFC Bank",
+        "accountType": "Savings",
+        "accountNumber": "****2724",
+        "balance": 450000,
+        "status": "Active",
+        "interestRate": 3.5,
+        "lastActivity": "2025-07-26"
+      },
+      {
+        "id": "acc2",
+        "bankName": "ICICI Bank",
+        "accountType": "Current",
+        "accountNumber": "****1383",
+        "balance": 320000,
+        "status": "Active",
+        "interestRate": 0,
+        "lastActivity": "2025-07-25"
+      },
+      {
+        "id": "acc3",
+        "bankName": "SBI",
+        "accountType": "Savings",
+        "accountNumber": "****9026",
+        "balance": 80000,
+        "status": "Active",
+        "interestRate": 3.0,
+        "lastActivity": "2025-07-24"
+      }
+    ]
+  },
+  "investmentData": {
+    "portfolioSummary": {
+      "totalValue": 125230.6,
+      "totalInvested": 118527.05,
+      "totalReturns": 6703.55,
+      "returnPercentage": 5.66,
+      "xirr": 8.15
+    },
+    "assetAllocation": [
+      {
+        "type": "Stocks",
+        "value": 75392.0,
+        "percentage": 60.2,
+        "color": "#4CAF50"
+      },
+      {
+        "type": "Mutual Funds",
+        "value": 49838.6,
+        "percentage": 39.8,
+        "color": "#FFC107"
+      }
+    ],
+    "epfSummary": {
+      "dataType": "epf",
+      "summary": {
+        "title": "EPF Balance",
+        "totalBalance": "₹2,11,111",
+        "pensionBalance": "₹10,00,000",
+        "lastUpdated": "As of Today",
+        "items": [
+          {
+            "label": "Total PF Balance",
+            "value": "₹2,11,111"
+          },
+          {
+            "label": "Pension Contribution",
+            "value": "₹10,00,000"
+          },
+          {
+            "label": "Employee Share",
+            "value": "₹1,06,111"
+          },
+          {
+            "label": "Employer Share",
+            "value": "₹1,05,000"
+          }
+        ]
+      }
+    },
+    "topHoldings": [
+      {
+        "name": "INE040A01034",
+        "type": "Stock",
+        "currentValue": 72000.0,
+        "investedValue": 67601.76,
+        "returns": 4398.24,
+        "returnPercentage": 6.51,
+        "units": 48
+      },
+      {
+        "name": "UTI Overnight - Direct Plan",
+        "type": "Mutual Fund",
+        "currentValue": 29500.0,
+        "investedValue": 29235.07,
+        "returns": 264.93,
+        "returnPercentage": 0.91,
+        "units": 10
+      },
+      {
+        "name": "ICICI Prudential Nifty 50 Index Fund - Direct Plan Growth",
+        "type": "Mutual Fund",
+        "currentValue": 10588.6,
+        "investedValue": 10027.0,
+        "returns": 561.6,
+        "returnPercentage": 5.6,
+        "units": 60.51
+      },
+      {
+        "name": "Canara Robeco Gilt Fund - Regular Plan",
+        "type": "Mutual Fund",
+        "currentValue": 7000.0,
+        "investedValue": 6655.46,
+        "returns": 344.54,
+        "returnPercentage": 5.18,
+        "units": 100
+      },
+      {
+        "name": "ICICI Prudential Balanced Advantage - Direct Plan",
+        "type": "Mutual Fund",
+        "currentValue": 2750.0,
+        "investedValue": 2636.0,
+        "returns": 114.0,
+        "returnPercentage": 4.32,
+        "units": 50
+      },
+      {
+        "name": "INE916P01025",
+        "type": "Stock",
+        "currentValue": 1232.0,
+        "investedValue": 344.0,
+        "returns": 888.0,
+        "returnPercentage": 258.14,
+        "units": 56
+      }
+    ],
+    "recentTransactions": [
+      {
+        "date": "2025-07-15",
+        "type": "Sell",
+        "scheme": "INE916P01025",
+        "amount": 200.0,
+        "units": 10,
+        "nav": 20.0
+      },
+      {
+        "date": "2025-07-15",
+        "type": "Buy",
+        "scheme": "INE916P01025",
+        "amount": 6.0,
+        "units": 4,
+        "nav": 1.5
+      },
+      {
+        "date": "2025-07-13",
+        "type": "Buy",
+        "scheme": "INE040A01034",
+        "amount": 14000.0,
+        "units": 10,
+        "nav": 1400.0
+      },
+      {
+        "date": "2025-07-11",
+        "type": "Buy",
+        "scheme": "INE916P01025",
+        "amount": 55.0,
+        "units": 5,
+        "nav": 11.0
+      },
+      {
+        "date": "2025-07-04",
+        "type": "Buy",
+        "scheme": "INE916P01025",
+        "amount": 80.0,
+        "units": 10,
+        "nav": 8.0
+      },
+      {
+        "date": "2025-06-05",
+        "type": "Buy",
+        "scheme": "INE916P01025",
+        "amount": 30.0,
+        "units": 2,
+        "nav": 15.0
+      },
+      {
+        "date": "2025-04-06",
+        "type": "Buy",
+        "scheme": "INE043D01016",
+        "amount": 240.44,
+        "units": 2,
+        "nav": 120.22
+      },
+      {
+        "date": "2025-03-17",
+        "type": "Buy",
+        "scheme": "INE916P01025",
+        "amount": 15.0,
+        "units": 3,
+        "nav": 5.0
+      },
+      {
+        "date": "2024-05-30",
+        "type": "Buy",
+        "scheme": "INE0CCU25019",
+        "amount": 0,
+        "units": 140,
+        "nav": null
+      },
+      {
+        "date": "2023-01-01",
+        "type": "Buy",
+        "scheme": "Canara Robeco Gilt Fund - Regular Plan",
+        "amount": 6655.46,
+        "units": 100,
+        "nav": 66.55
+      }
+    ]
+  },
+  "wealthProfile": {
+    "assetBreakdown": [
+      {
+        "category": "EPF",
+        "value": 211111.0,
+        "percentage": 29.22,
+        "color": "#4A90E2",
+        "growth": {
+          "monthly": 1.5,
+          "yearly": 18.2
+        },
+        "liquidity": "Low"
+      },
+      {
+        "category": "Indian Securities",
+        "value": 200642.0,
+        "percentage": 27.78,
+        "color": "#50E3C2",
+        "growth": {
+          "monthly": 3.2,
+          "yearly": 25.6
+        },
+        "liquidity": "High"
+      },
+      {
+        "category": "Savings Accounts",
+        "value": 195297.0,
+        "percentage": 27.04,
+        "color": "#F5A623",
+        "growth": {
+          "monthly": 0.3,
+          "yearly": 3.5
+        },
+        "liquidity": "Immediate"
+      },
+      {
+        "category": "Mutual Funds",
+        "value": 84642.0,
+        "percentage": 11.72,
+        "color": "#7ED321",
+        "growth": {
+          "monthly": 2.8,
+          "yearly": 15.4
+        },
+        "liquidity": "High"
+      },
+      {
+        "category": "US Securities",
+        "value": 30613.0,
+        "percentage": 4.24,
+        "color": "#BD10E0",
+        "growth": {
+          "monthly": 4.1,
+          "yearly": 32.8
+        },
+        "liquidity": "High"
+      }
+    ]
+  },
+  "creditReport": {
+    "paymentHistory": {
+      "onTimePayments": 65,
+      "latePayments": 35,
+      "onTimePercentage": 65,
+      "paymentTrend": "Declining",
+      "last12Months": {
+        "onTime": 4,
+        "late30Days": 3,
+        "late60Days": 2,
+        "late90Days": 2,
+        "late120PlusDays": 1
+      }
+    }
+  },
+  "historicalData": {
+    "netWorth": [
+      {"month": "Jan", "value": 580000},
+      {"month": "Feb", "value": 595000},
+      {"month": "Mar", "value": 610000},
+      {"month": "Apr", "value": 605000},
+      {"month": "May", "value": 620000},
+      {"month": "Jun", "value": 635000},
+      {"month": "Jul", "value": 658305}
+    ],
+    "creditScore": [
+      {"month": "Jan", "score": 725},
+      {"month": "Feb", "score": 730},
+      {"month": "Mar", "score": 735},
+      {"month": "Apr", "score": 720},
+      {"month": "May", "score": 740},
+      {"month": "Jun", "score": 745},
+      {"month": "Jul", "score": 746}
+    ],
+    "monthlyCashFlow": [
+      {"month": "Jan", "surplus": 55000, "income": 125000, "expenses": 70000},
+      {"month": "Feb", "surplus": 58000, "income": 125000, "expenses": 67000},
+      {"month": "Mar", "surplus": 60000, "income": 128000, "expenses": 68000},
+      {"month": "Apr", "surplus": 57000, "income": 125000, "expenses": 68000},
+      {"month": "May", "surplus": 59000, "income": 126000, "expenses": 67000},
+      {"month": "Jun", "surplus": 60500, "income": 127500, "expenses": 67000},
+      {"month": "Jul", "surplus": 61500, "income": 128500, "expenses": 67000}
+    ]
+  },
+  "monthlyFinancialSnapshot": {
+    "income": {
+      "salary": 125000,
+      "investments": 3500,
+      "other": 0,
+      "total": 128500
+    },
+    "expenses": {
+      "emi": 9000,
+      "living": 35000,
+      "utilities": 8000,
+      "others": 15000,
+      "total": 67000
+    },
+    "surplus": 61500,
+    "savingsRate": 47.86
+  },
+  "aiGeneratedInsights": {
+    "overallProfile": "Strong financial foundation with opportunity to optimize credit utilization",
+    "netWorthInsights": [
+      "Portfolio grew 13.5% in 6 months, outperforming market by 3.2%",
+      "57% allocation in low-yield assets - consider rebalancing",
+      "Emergency fund covers 4.2 months - aim for 6 months coverage"
+    ],
+    "creditInsights": [
+      "Clear ₹47k overdue to boost score by 50+ points immediately",
+      "Recent 4 inquiries reduced score by 15 points - avoid new applications"
+    ],
+    "bankingInsights": [
+      "Accounts well-balanced. Consider optimizing rates.",
+      "Most spent on Cash this month"
+    ],
+    "investmentInsights": [
+      "Recent activity in INE916P01025. Top performer: INE916P01025 (+258% gains).",
+      "Portfolio up 5.7% (₹6.7k gains). XIRR of 8.15% beats market."
+    ]
+  }
+}

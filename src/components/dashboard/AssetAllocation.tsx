@@ -48,7 +48,13 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
   }, [totalValue])
 
   const formatCurrency = (value: number) => {
-    return `₹${(value / 100000).toFixed(2)}L`
+    const absAmount = Math.abs(value)
+    if (absAmount >= 100000) {
+      return `₹${(absAmount / 100000).toFixed(1)}L`
+    } else if (absAmount >= 1000) {
+      return `₹${(absAmount / 1000).toFixed(1)}k`
+    }
+    return `₹${absAmount.toLocaleString()}`
   }
 
   // Calculate pie segments
