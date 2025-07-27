@@ -116,6 +116,10 @@ class StreamingCallbackHandler(AsyncCallbackHandler):
         **kwargs: Any,
     ) -> None:
         """Handle LLM start event."""
+        # Add null safety check for cloud environments
+        if serialized is None:
+            serialized = {}
+        
         # Store run info
         self.active_runs[run_id] = {
             "type": "llm",
@@ -197,6 +201,10 @@ class StreamingCallbackHandler(AsyncCallbackHandler):
         **kwargs: Any,
     ) -> None:
         """Handle tool start event."""
+        # Add null safety check for cloud environments
+        if serialized is None:
+            serialized = {}
+            
         tool_name = serialized.get("name", "unknown")
         
         # Store run info
@@ -304,60 +312,69 @@ class StreamingCallbackHandler(AsyncCallbackHandler):
         **kwargs: Any,
     ) -> None:
         """Handle chain start event (includes agent start)."""
-        # Better chain name extraction with safer null handling
-        chain_name = "unknown"
-        if serialized.get("name"):
-            chain_name = serialized.get("name")
-        elif serialized.get("id"):
-            if isinstance(serialized.get("id"), list):
-                chain_name = serialized.get("id")[-1]
-            else:
-                chain_name = serialized.get("id")
-        elif serialized.get("graph") and serialized.get("graph").get("name"):
-            chain_name = serialized.get("graph").get("name")
-        elif serialized.get("class_name"):
-            chain_name = serialized.get("class_name")
-        
-        # Filter out internal LangGraph operations
-        internal_chains = {
-            "RunnableParallel", "RunnablePassthrough", "RunnableSequence",
-            "RunnableLambda", "RunnableMap", "ChannelWrite", "ChannelRead",
-            "RunnableAssign", "RemoteRunnable", "__start__", "__end__"
-        }
-        if any(internal in str(chain_name) for internal in internal_chains):
-            return  # Skip logging internal operations
-        
-        # Store run info
-        self.active_runs[run_id] = {
-            "type": "chain",
-            "name": chain_name,
-            "start_time": asyncio.get_event_loop().time()
-        }
-        
-        # Check if this is the main agent starting
-        if "agent" in chain_name.lower() and parent_run_id is None:
-            event = StreamEvent(
-                type=EventType.REASONING_START,
-                content="Agent reasoning started",
-                metadata={
-                    "agent_name": chain_name,
-                    "input_preview": str(inputs)[:200] + "..." if len(str(inputs)) > 200 else str(inputs)
-                } if inputs else {"agent_name": chain_name}
-            )
-            await self.emit_event(event)
-            # Emit initial progress
-            await self.emit_progress(1, "Starting analysis")
-        else:
-            # This is a sub-chain/node
-            event = self.formatter.format_node_execution(chain_name, start=True)
-            await self.emit_event(event)
+        try:
+            # Add null safety check for cloud environments - this is the main fix
+            if serialized is None:
+                serialized = {}
             
-            # Only track meaningful nodes
-            if chain_name != "unknown" and not chain_name.startswith("Runnable"):
-                self.node_count += 1
+            # Better chain name extraction with safer null handling
+            chain_name = "unknown"
+            if serialized.get("name"):
+                chain_name = serialized.get("name")
+            elif serialized.get("id"):
+                if isinstance(serialized.get("id"), list):
+                    chain_name = serialized.get("id")[-1]
+                else:
+                    chain_name = serialized.get("id")
+            elif serialized.get("graph") and serialized.get("graph").get("name"):
+                chain_name = serialized.get("graph").get("name")
+            elif serialized.get("class_name"):
+                chain_name = serialized.get("class_name")
+            
+            # Filter out internal LangGraph operations
+            internal_chains = {
+                "RunnableParallel", "RunnablePassthrough", "RunnableSequence",
+                "RunnableLambda", "RunnableMap", "ChannelWrite", "ChannelRead",
+                "RunnableAssign", "RemoteRunnable", "__start__", "__end__"
+            }
+            if any(internal in str(chain_name) for internal in internal_chains):
+                return  # Skip logging internal operations
+            
+            # Store run info
+            self.active_runs[run_id] = {
+                "type": "chain",
+                "name": chain_name,
+                "start_time": asyncio.get_event_loop().time()
+            }
+            
+            # Check if this is the main agent starting
+            if "agent" in chain_name.lower() and parent_run_id is None:
+                event = StreamEvent(
+                    type=EventType.REASONING_START,
+                    content="Agent reasoning started",
+                    metadata={
+                        "agent_name": chain_name,
+                        "input_preview": str(inputs)[:200] + "..." if len(str(inputs)) > 200 else str(inputs)
+                    } if inputs else {"agent_name": chain_name}
+                )
+                await self.emit_event(event)
+                # Emit initial progress
+                await self.emit_progress(1, "Starting analysis")
+            else:
+                # This is a sub-chain/node
+                event = self.formatter.format_node_execution(chain_name, start=True)
+                await self.emit_event(event)
                 
-                # Update progress on node start
-                await self.emit_progress(details=f"Processing {chain_name}")
+                # Only track meaningful nodes
+                if chain_name != "unknown" and not chain_name.startswith("Runnable"):
+                    self.node_count += 1
+                    
+                    # Update progress on node start
+                    await self.emit_progress(details=f"Processing {chain_name}")
+        except Exception as e:
+            # Silently handle callback errors to prevent breaking the streaming
+            # In production, you might want to log this to a separate error log
+            pass
     
     async def on_chain_end(
         self,
