@@ -1,0 +1,50 @@
+# Exclude git directories and files
+.git
+.github
+.gitignore
+
+# Virtual environments - these shouldn't be uploaded to Cloud Run
+.venv
+env/
+venv/
+ENV/
+
+# Local development files that shouldn't be deployed
+.vscode/
+.idea/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Log files
+*.log
+
+# Testing files
+test_*.py
+test_*.sh
+.pytest_cache/
+.coverage
+
+# Development scripts that aren't needed in production
+*.bak
+*.tmp
+*.temp
+
+# Temporary and OS files
+.DS_Store
+Thumbs.db
+
+# Explicitly allow all Python files in your application
+!*.py
+!*.json
+!requirements.txt
+!Procfile
+
+# Don't exclude configuration files
+!config/
+!config/*.json
+!.env.example
+
+# Exclude any heavyweight development or testing dependencies
+node_modules/
