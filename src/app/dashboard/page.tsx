@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout"
 import { FinancialHealthScore } from "@/components/dashboard/FinancialHealthScore"
 import { CreditShield } from "@/components/dashboard/CreditShield"
-import { WealthWeb } from "@/components/dashboard/WealthWeb"
 import { CashFlowRiver } from "@/components/dashboard/CashFlowRiver"
 import { AssetAllocation } from "@/components/dashboard/AssetAllocation"
 import { GrowthTrends } from "@/components/dashboard/GrowthTrends"
@@ -48,7 +47,7 @@ export default function DashboardPage() {
       >
         {/* Top Row: Financial Health Score + Main Metrics */}
         <motion.div 
-          className="grid grid-cols-4 gap-3 h-[calc(40%-4px)]"
+          className="grid grid-cols-3 gap-3 h-[calc(40%-4px)]"
           variants={containerVariants}
         >
           {/* Financial Health Score - Left */}
@@ -61,36 +60,31 @@ export default function DashboardPage() {
             />
           </motion.div>
 
-          {/* Credit Shield */}
+          {/* Overview */}
           <motion.div variants={itemVariants} className="relative">
             <CreditShield 
-              score={data.financialOverview.creditScore.score}
-              maxScore={data.financialOverview.creditScore.maxScore}
-              rating={data.financialOverview.creditScore.rating}
-              paymentHistory={data.creditReport.paymentHistory}
-              historicalData={data.historicalData.creditScore}
+              netWorth={{
+                total: data.financialOverview.netWorth.total,
+                totalAssets: data.financialOverview.netWorth.totalAssets,
+                totalLiabilities: data.financialOverview.netWorth.totalLiabilities,
+                debtToAssetRatio: data.financialOverview.netWorth.debtToAssetRatio
+              }}
+              creditScore={{
+                score: data.financialOverview.creditScore.score,
+                maxScore: data.financialOverview.creditScore.maxScore,
+                rating: data.financialOverview.creditScore.rating
+              }}
               insight={data.aiGeneratedInsights.creditInsights[0]}
             />
           </motion.div>
 
-          {/* Wealth Web */}
-          <motion.div variants={itemVariants} className="relative">
-            <WealthWeb 
-              netWorth={data.financialOverview.netWorth.total}
-              assetBreakdown={data.wealthProfile.assetBreakdown}
-              monthlyGrowth={data.financialOverview.netWorth.monthlyGrowth}
-              historicalData={data.historicalData.netWorth}
-              insight={data.aiGeneratedInsights.netWorthInsights[0]}
-            />
-          </motion.div>
-
-          {/* Cash Flow River */}
+          {/* AI Insights */}
           <motion.div variants={itemVariants} className="relative">
             <CashFlowRiver 
-              monthlyData={data.monthlyFinancialSnapshot}
-              historicalData={data.historicalData.monthlyCashFlow}
-              savingsRate={data.monthlyFinancialSnapshot.savingsRate}
-              insight={data.aiGeneratedInsights.netWorthInsights[1]}
+              creditInsights={data.aiGeneratedInsights.creditInsights}
+              netWorthInsights={data.aiGeneratedInsights.netWorthInsights}
+              bankingInsights={data.aiGeneratedInsights.bankingInsights}
+              investmentInsights={data.aiGeneratedInsights.investmentInsights}
             />
           </motion.div>
         </motion.div>

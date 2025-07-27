@@ -5,16 +5,26 @@ import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { MessageCircle, Mic } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { getCurrentUser } from "@/lib/auth"
 
 export const ChatVoiceFAB: React.FC = () => {
   const router = useRouter()
 
   const handleClick = () => {
+    // Get current user data from localStorage
+    const currentUser = getCurrentUser()
+    
     // Get the current origin to construct the return URL
     const returnUrl = window.location.origin + '/dashboard'
     
-    // Redirect to Gemini Vox with return URL as query parameter
-    window.location.href = `https://gemini-vox-218281830730.us-central1.run.app?returnUrl=${encodeURIComponent(returnUrl)}`
+    // Build query parameters including phone number
+    const params = new URLSearchParams({
+      returnUrl: returnUrl,
+      phone: currentUser?.phone || ''
+    })
+    
+    // Redirect to Gemini Vox with return URL and phone number as query parameters
+    window.location.href = `https://gemini-vox-218281830730.us-central1.run.app?${params.toString()}`
   }
 
   return (

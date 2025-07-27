@@ -58,39 +58,31 @@ export const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({
         <div className="relative z-10 p-4 h-full flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-medium text-gray-400">Financial Health</h3>
-            {insight && (
-              <div className="relative">
-                <motion.button
-                  className="relative group"
-                  onMouseEnter={() => setShowInsight(true)}
-                  onMouseLeave={() => setShowInsight(false)}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <Info className="w-4 h-4 text-gray-400 hover:text-primary transition-colors" />
-                </motion.button>
-                
-                <AnimatePresence>
-                  {showInsight && (
-                    <motion.div
-                      className="absolute top-full right-0 mt-2 w-64 z-50"
-                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="bg-gray-900/95 backdrop-blur-md rounded-lg p-3 shadow-xl border border-white/10">
-                        <p className="text-xs text-gray-300 leading-relaxed">
-                          {insight}
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
+            <div className="flex items-center gap-3">
+              <h3 className="text-base font-medium text-gray-400">Financial Health</h3>
+              <p className="text-gray-500 text-sm">Overall score</p>
+            </div>
           </div>
+
+          {/* AI Insight - At Top */}
+          {insight && (
+            <div className="mb-3">
+              <div className="bg-white/[0.06] rounded-lg p-1.5 backdrop-blur-sm border border-white/[0.08]">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Info className="w-2.5 h-2.5 text-primary" />
+                  </div>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <p className="text-xs font-medium text-white">AI Insight:</p>
+                    <p className="text-xs text-gray-300">
+                      Score: <span className="text-primary font-medium">{score}/100</span>. 
+                      Focus on improving debt management for better health.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* Score Display with Ring */}
           <svg 

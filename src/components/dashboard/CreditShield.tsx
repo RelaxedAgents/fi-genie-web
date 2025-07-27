@@ -1,61 +1,80 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { motion, useAnimation, AnimatePresence } from "framer-motion"
-import { Info } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Info, TrendingUp, TrendingDown, DollarSign } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-interface CreditShieldProps {
-  score: number
-  maxScore: number
-  rating: string
-  paymentHistory: {
-    onTimePercentage: number
+interface OverviewProps {
+  netWorth: {
+    total: number
+    totalAssets: number
+    totalLiabilities: number
+    debtToAssetRatio: number
   }
-  historicalData: Array<{ month: string; score: number }>
+  creditScore: {
+    score: number
+    maxScore?: number
+    rating?: string
+  }
   insight?: string
 }
 
-export const CreditShield: React.FC<CreditShieldProps> = ({
-  score,
-  maxScore,
-  rating,
-  paymentHistory,
-  historicalData,
+export const CreditShield: React.FC<OverviewProps> = ({
+  netWorth,
+  creditScore,
   insight
 }) => {
-  const [displayScore, setDisplayScore] = useState(0)
+  const [displayNetWorth, setDisplayNetWorth] = useState(0)
+  const [displayCreditScore, setDisplayCreditScore] = useState(0)
   const [showInsight, setShowInsight] = useState(false)
-  const controls = useAnimation()
-  
-  const percentage = (score / maxScore) * 100
-  const fillHeight = percentage
 
   useEffect(() => {
-    // Animate score counting
+    // Animate net worth counting
     const duration = 2000
     const steps = 60
-    const increment = score / steps
+    const increment = netWorth.total / steps
     let current = 0
 
     const timer = setInterval(() => {
       current += increment
-      if (current >= score) {
-        setDisplayScore(score)
+      if (current >= netWorth.total) {
+        setDisplayNetWorth(netWorth.total)
         clearInterval(timer)
       } else {
-        setDisplayScore(Math.floor(current))
+        setDisplayNetWorth(Math.floor(current))
       }
     }, duration / steps)
 
-    // Animate liquid fill
-    controls.start({
-      height: `${fillHeight}%`,
-      transition: { duration: 2, ease: "easeOut" }
-    })
+    // Animate credit score counting
+    const scoreIncrement = creditScore.score / steps
+    let scoreCurrent = 0
 
-    return () => clearInterval(timer)
-  }, [score, fillHeight, controls])
+    const scoreTimer = setInterval(() => {
+      scoreCurrent += scoreIncrement
+      if (scoreCurrent >= creditScore.score) {
+        setDisplayCreditScore(creditScore.score)
+        clearInterval(scoreTimer)
+      } else {
+        setDisplayCreditScore(Math.floor(scoreCurrent))
+      }
+    }, duration / steps)
+
+    return () => {
+      clearInterval(timer)
+      clearInterval(scoreTimer)
+    }
+  }, [netWorth.total, creditScore.score])
+
+  const formatCurrency = (value: number) => {
+    const absAmount = Math.abs(value)
+    if (absAmount >= 100000) {
+      return `₹${(absAmount / 100000).toFixed(1)}L`
+    } else if (absAmount >= 1000) {
+      return `₹${(absAmount / 1000).toFixed(1)}k`
+    }
+    return `₹${absAmount.toLocaleString()}`
+  }
 
   return (
     <motion.div className="relative h-full">
@@ -66,99 +85,154 @@ export const CreditShield: React.FC<CreditShieldProps> = ({
         "shadow-2xl shadow-black/50",
         "overflow-hidden group"
       )}>
-        {/* Liquid Fill Effect */}
-        <motion.svg
-          className="absolute inset-0 w-full h-full"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <defs>
-            <clipPath id="waveClipPath">
-              <rect x="0" y="0" width="100" height="100" />
-            </clipPath>
-          </defs>
-          
-          <g clipPath="url(#waveClipPath)">
-            {/* Animated fill with wave */}
-            <motion.g
-              initial={{ y: 100 }}
-              animate={{ y: 100 - fillHeight }}
-              transition={{ duration: 2, ease: "easeOut" }}
-            >
-              {/* Wave path */}
-              <motion.path
-                d="M0,5 Q25,0 50,5 T100,5 L100,100 L0,100 Z"
-                className="fill-primary/30"
-                animate={{
-                  d: [
-                    "M0,5 Q25,0 50,5 T100,5 L100,100 L0,100 Z",
-                    "M0,5 Q25,10 50,5 T100,5 L100,100 L0,100 Z",
-                    "M0,5 Q25,0 50,5 T100,5 L100,100 L0,100 Z"
-                  ]
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-              />
-            </motion.g>
-          </g>
-        </motion.svg>
+        {/* Shield Glow Effect */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          animate={{
+            boxShadow: [
+              "inset 0 0 50px rgba(59, 130, 246, 0.1)",
+              "inset 0 0 100px rgba(59, 130, 246, 0.2)",
+              "inset 0 0 50px rgba(59, 130, 246, 0.1)"
+            ]
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
 
         {/* Content */}
         <div className="relative z-10 p-4 h-full flex flex-col">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-400">Credit Score</h3>
-            {insight && (
-              <motion.button
-                className="relative group"
-                onMouseEnter={() => setShowInsight(true)}
-                onMouseLeave={() => setShowInsight(false)}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Info className="w-4 h-4 text-gray-400 hover:text-primary transition-colors" />
-                
-                <AnimatePresence>
-                  {showInsight && (
-                    <motion.div
-                      className="absolute top-full right-0 mt-2 w-64 z-50"
-                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <div className="bg-gray-900/95 backdrop-blur-md rounded-lg p-3 shadow-xl border border-white/10">
-                        <p className="text-xs text-gray-300 leading-relaxed">
-                          {insight}
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.button>
-            )}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <h3 className="text-base font-medium text-gray-400">Overview</h3>
+              <p className="text-gray-500 text-sm">Financial summary</p>
+            </div>
           </div>
 
-          {/* Score Display */}
-          <div className="flex-1 flex flex-col items-center justify-center">
+          {/* AI Insight - At Top */}
+          {insight && (
+            <div className="mb-8">
+              <div className="bg-white/[0.06] rounded-lg p-1.5 backdrop-blur-sm border border-white/[0.08]">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Info className="w-2.5 h-2.5 text-primary" />
+                  </div>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <p className="text-xs font-medium text-white">AI Insight:</p>
+                    <p className="text-xs text-gray-300">
+                      Net Worth: <span className="text-primary font-medium">{formatCurrency(netWorth.total)}</span>. 
+                      Low debt ratio of {netWorth.debtToAssetRatio.toFixed(1)}% is excellent.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Main Display - Net Worth and Credit Score - Centered */}
+          <div className="flex justify-center items-center mb-6">
+            <div className="flex gap-16 items-center">
+              <div className="text-center">
+                <motion.div
+                  className="text-4xl font-bold text-green-400 mb-2"
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  {formatCurrency(displayNetWorth)}
+                </motion.div>
+                <p className="text-sm text-gray-400">Net Worth</p>
+              </div>
+              <div className="text-center">
+                <motion.div
+                  className="text-4xl font-bold text-primary mb-2"
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                  {displayCreditScore}
+                </motion.div>
+                <p className="text-sm text-gray-400">Credit Score</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Overview Cards - Removed Credit Score */}
+          <div className="flex-1 space-y-4">
+            {/* Assets */}
             <motion.div
-              className="text-4xl font-bold text-white mb-1"
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5 }}
+              className="bg-white/[0.03] rounded-lg p-2 backdrop-blur-sm border border-white/[0.05]"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3, duration: 0.3 }}
             >
-              {displayScore}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-green-400" />
+                  <span className="text-xs text-gray-400">Total Assets</span>
+                </div>
+                <span className="text-sm font-semibold text-green-400">
+                  {formatCurrency(netWorth.totalAssets)}
+                </span>
+              </div>
             </motion.div>
-            <p className="text-sm font-medium gradient-text">{rating}</p>
-            <p className="text-xs text-gray-500">out of {maxScore}</p>
+
+            {/* Liabilities */}
+            <motion.div
+              className="bg-white/[0.03] rounded-lg p-2 backdrop-blur-sm border border-white/[0.05]"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4, duration: 0.3 }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingDown className="w-4 h-4 text-red-400" />
+                  <span className="text-xs text-gray-400">Total Liabilities</span>
+                </div>
+                <span className="text-sm font-semibold text-red-400">
+                  {formatCurrency(netWorth.totalLiabilities)}
+                </span>
+              </div>
+            </motion.div>
+
+            {/* Debt to Asset Ratio */}
+            <motion.div
+              className="bg-white/[0.03] rounded-lg p-2 backdrop-blur-sm border border-white/[0.05]"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5, duration: 0.3 }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-blue-400" />
+                  <span className="text-xs text-gray-400">Debt to Asset Ratio</span>
+                </div>
+                <span className="text-sm font-semibold text-blue-400">
+                  {netWorth.debtToAssetRatio.toFixed(1)}%
+                </span>
+              </div>
+            </motion.div>
           </div>
         </div>
 
+        {/* Enhanced Pulse Animation */}
+        <motion.div
+          className="absolute inset-0 rounded-3xl"
+          animate={{
+            boxShadow: [
+              "0 0 0 0 rgba(0, 212, 255, 0)",
+              "0 0 0 10px rgba(0, 212, 255, 0.3)",
+              "0 0 0 0 rgba(0, 212, 255, 0)"
+            ]
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
       </div>
     </motion.div>
   )
