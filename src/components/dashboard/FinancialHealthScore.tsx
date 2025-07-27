@@ -41,52 +41,24 @@ export const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({
   }
 
   const scoreColors = getScoreColor(score)
-  const radius = 50
+  const radius = 55
   const circumference = 2 * Math.PI * radius
   const strokeDasharray = (displayScore / 100) * circumference
 
   return (
     <motion.div className="relative h-full">
-      {/* Glass Card Container */}
-      <motion.div
-        className={cn(
-          "relative w-full h-full rounded-3xl",
-          "bg-white/[0.06] backdrop-blur-xl",
-          "border border-white/[0.08]",
-          "shadow-2xl shadow-black/50",
-          "flex flex-col"
-        )}
-        whileHover={{ scale: 1.01 }}
-        transition={{ duration: 0.3 }}
-      >
-        {/* Enhanced gradient overlay */}
-        <div className="absolute inset-0">
-          <div className={cn(
-            "absolute inset-0 opacity-20",
-            "bg-gradient-to-br from-primary/30 to-primary-light/30"
-          )} />
-          <motion.div
-            className="absolute inset-0"
-            animate={{
-              background: [
-                "radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%)",
-                "radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%)",
-                "radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%)"
-              ]
-            }}
-            transition={{
-              duration: 10,
-              repeat: Infinity,
-              ease: "linear"
-            }}
-          />
-        </div>
-
+      <div className={cn(
+        "relative w-full h-full rounded-3xl",
+        "bg-white/[0.03] backdrop-blur-xl",
+        "border border-white/[0.05]",
+        "shadow-2xl shadow-black/50",
+        "overflow-hidden"
+      )}>
         {/* Content */}
-        <div className="relative z-10 flex flex-col h-full p-4">
+        <div className="relative z-10 p-4 h-full flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between w-full mb-2">
-            <h3 className="text-base font-medium text-gray-400">Financial Health</h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-medium text-gray-400">Financial Health</h3>
             {insight && (
               <div className="relative">
                 <motion.button
@@ -96,7 +68,7 @@ export const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <Info className="w-4 h-4 text-gray-500 hover:text-primary transition-colors" />
+                  <Info className="w-4 h-4 text-gray-400 hover:text-primary transition-colors" />
                 </motion.button>
                 
                 <AnimatePresence>
@@ -107,10 +79,9 @@ export const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      style={{ pointerEvents: 'auto' }}
                     >
-                      <div className="bg-gray-900/95 backdrop-blur-md rounded-lg p-3 shadow-xl border border-white/20">
-                        <p className="text-xs text-gray-200 leading-relaxed">
+                      <div className="bg-gray-900/95 backdrop-blur-md rounded-lg p-3 shadow-xl border border-white/10">
+                        <p className="text-xs text-gray-300 leading-relaxed">
                           {insight}
                         </p>
                       </div>
@@ -122,28 +93,68 @@ export const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({
           </div>
           
           {/* Score Display with Ring */}
-          <div className="relative flex items-center justify-center flex-1 py-2">
-            <div className="relative">
-              <svg 
-                width="120" 
-                height="120" 
-                viewBox="0 0 120 120"
-                style={{ transform: 'rotate(-90deg)' }}
-              >
+          <svg 
+            className="mx-auto my-2 block flex-shrink-0"
+            width="110" 
+            height="110" 
+            viewBox="0 0 140 140"
+          >
+                {/* Circular pulse effect - moved to back */}
+                <motion.circle
+                  cx="70"
+                  cy="70"
+                  r={radius + 5}
+                  fill="none"
+                  stroke={`url(#pulseGradient-${score})`}
+                  strokeWidth="1"
+                  animate={{
+                    r: [radius + 5, radius + 15, radius + 5],
+                    opacity: [0.15, 0, 0.15]
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                />
+
                 {/* Background circle */}
                 <circle
-                  cx="60"
-                  cy="60"
+                  cx="70"
+                  cy="70"
                   r={radius}
                   fill="none"
                   stroke="rgba(255,255,255,0.1)"
                   strokeWidth="8"
                 />
                 
+                {/* Enhanced glow effect */}
+                <motion.circle
+                  cx="70"
+                  cy="70"
+                  r={radius}
+                  fill="none"
+                  stroke={`url(#glowGradient-${score})`}
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                  strokeDasharray={`${strokeDasharray} ${circumference}`}
+                  opacity="0.3"
+                  filter="blur(6px)"
+                  animate={{
+                    opacity: [0.2, 0.4, 0.2]
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  style={{ transform: 'rotate(-90deg)', transformOrigin: '70px 70px' }}
+                />
+                
                 {/* Animated progress ring */}
                 <motion.circle
-                  cx="60"
-                  cy="60"
+                  cx="70"
+                  cy="70"
                   r={radius}
                   fill="none"
                   stroke={`url(#scoreGradient-${score})`}
@@ -155,28 +166,7 @@ export const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({
                     opacity: 1
                   }}
                   transition={{ duration: 2, delay: 0.5, ease: "easeOut" }}
-                />
-                
-                {/* Enhanced glow effect */}
-                <motion.circle
-                  cx="60"
-                  cy="60"
-                  r={radius}
-                  fill="none"
-                  stroke={`url(#glowGradient-${score})`}
-                  strokeWidth="16"
-                  strokeLinecap="round"
-                  strokeDasharray={`${strokeDasharray} ${circumference}`}
-                  opacity="0.4"
-                  filter="blur(8px)"
-                  animate={{
-                    opacity: [0.3, 0.6, 0.3]
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
+                  style={{ transform: 'rotate(-90deg)', transformOrigin: '70px 70px' }}
                 />
               
               <defs>
@@ -188,43 +178,58 @@ export const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({
                   <stop offset="0%" stopColor="#00D4FF" stopOpacity="1" />
                   <stop offset="100%" stopColor={scoreColors.to} stopOpacity="1" />
                 </linearGradient>
+                <linearGradient id={`pulseGradient-${score}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor={scoreColors.from} stopOpacity="0.3" />
+                  <stop offset="100%" stopColor={scoreColors.to} stopOpacity="0.3" />
+                </linearGradient>
               </defs>
-            </svg>
-            
-              {/* Score number with animation */}
-              <motion.div
-                className="absolute inset-0 flex items-center justify-center"
+              
+              {/* Score text inside SVG */}
+              <motion.text
+                x="70"
+                y="75"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="text-4xl font-bold fill-white"
+                style={{ fontSize: '2.75rem' }}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ 
+                  duration: 0.8, 
+                  delay: 0.3,
+                  type: "spring",
+                  bounce: 0.4
+                }}
               >
-                <span className="text-5xl font-bold text-white">
-                  {Math.round(displayScore)}
-                </span>
-              </motion.div>
-            </div>
-            
-            {/* Enhanced animated particles */}
-            {[...Array(4)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-2 h-2 bg-cyan-400 rounded-full shadow-lg shadow-cyan-400/50"
-                animate={{
-                  x: [0, Math.cos(i * 90 * Math.PI / 180) * 35, 0],
-                  y: [0, Math.sin(i * 90 * Math.PI / 180) * 35, 0],
-                  opacity: [0, 1, 0],
-                  scale: [0, 1.5, 0]
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  delay: i * 0.75,
-                  ease: "easeOut"
-                }}
-              />
-            ))}
-          </div>
+                {Math.round(displayScore)}
+              </motion.text>
+              
+              {/* Animated particles inside SVG */}
+              {[...Array(4)].map((_, i) => (
+                <motion.circle
+                  key={i}
+                  r="3"
+                  fill="#22d3ee"
+                  opacity="0.6"
+                  animate={{
+                    cx: [70, 70 + Math.cos(i * 90 * Math.PI / 180) * 35, 70],
+                    cy: [70, 70 + Math.sin(i * 90 * Math.PI / 180) * 35, 70],
+                    opacity: [0, 0.6, 0],
+                    r: [2, 3, 2]
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    delay: i * 0.75,
+                    ease: "easeOut"
+                  }}
+                />
+              ))}
+          </svg>
 
           {/* Status Text */}
           <motion.p 
-            className="text-white font-medium text-base mb-3"
+            className="text-white font-medium text-sm mb-3"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
@@ -234,7 +239,7 @@ export const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({
           
           {/* Component Scores - Always visible */}
           <motion.div
-            className="grid grid-cols-2 gap-2 w-full"
+            className="grid grid-cols-2 gap-1 w-full flex-shrink-0"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.8 }}
@@ -242,37 +247,21 @@ export const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({
             {Object.entries(components).map(([key, value], index) => (
               <motion.div
                 key={key}
-                className="bg-white/[0.04] rounded-lg p-2 backdrop-blur-sm border border-white/[0.06]"
+                className="bg-white/[0.03] rounded-md px-1.5 py-1.5 backdrop-blur-sm border border-white/[0.05]"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 1 + index * 0.1, duration: 0.3 }}
               >
-                <div className="text-xs text-gray-500 capitalize mb-0.5">
+                <div className="text-[10px] text-gray-500 capitalize">
                   {key.replace(/([A-Z])/g, ' $1').trim()}
                 </div>
-                <div className="text-sm font-semibold text-white">{value}</div>
+                <div className="text-xs font-semibold text-white">{value}</div>
               </motion.div>
             ))}
           </motion.div>
         </div>
 
-        {/* Enhanced Pulse Animation using box-shadow */}
-        <motion.div
-          className="absolute inset-0 rounded-3xl"
-          animate={{
-            boxShadow: [
-              "0 0 0 0 rgba(0, 212, 255, 0)",
-              "0 0 0 10px rgba(0, 212, 255, 0.3)",
-              "0 0 0 0 rgba(0, 212, 255, 0)"
-            ]
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-      </motion.div>
+      </div>
     </motion.div>
   )
 }

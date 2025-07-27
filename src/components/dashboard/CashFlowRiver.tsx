@@ -37,7 +37,6 @@ export const CashFlowRiver: React.FC<CashFlowRiverProps> = ({
   insight
 }) => {
   const [displaySurplus, setDisplaySurplus] = useState(0)
-  const [showDetails, setShowDetails] = useState(false)
   const [showInsight, setShowInsight] = useState(false)
 
   useEffect(() => {
@@ -66,8 +65,6 @@ export const CashFlowRiver: React.FC<CashFlowRiverProps> = ({
   return (
     <motion.div 
       className="relative h-full"
-      onMouseEnter={() => setShowDetails(true)}
-      onMouseLeave={() => setShowDetails(false)}
     >
       <div className={cn(
         "relative w-full h-full rounded-3xl",
@@ -79,7 +76,7 @@ export const CashFlowRiver: React.FC<CashFlowRiverProps> = ({
         {/* River Animation Background */}
         <div className="absolute inset-0">
           {/* Flowing Water Effect */}
-          <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
             <defs>
               <linearGradient id="riverGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" className="text-blue-400/20" stopColor="currentColor" />
@@ -92,20 +89,20 @@ export const CashFlowRiver: React.FC<CashFlowRiverProps> = ({
             {[0, 1, 2].map((index) => (
               <motion.path
                 key={index}
-                d="M0,150 Q75,130 150,150 T300,150 L300,300 L0,300 Z"
+                d="M0,50 Q25,45 50,50 T100,50 L100,100 L0,100 Z"
                 fill="url(#riverGradient)"
                 fillOpacity={0.3 - index * 0.1}
                 animate={{
                   d: [
-                    "M0,150 Q75,130 150,150 T300,150 L300,300 L0,300 Z",
-                    "M0,150 Q75,170 150,150 T300,150 L300,300 L0,300 Z",
-                    "M0,150 Q75,130 150,150 T300,150 L300,300 L0,300 Z"
+                    "M0,50 Q25,45 50,50 T100,50 L100,100 L0,100 Z",
+                    "M0,50 Q25,55 50,50 T100,50 L100,100 L0,100 Z",
+                    "M0,50 Q25,45 50,50 T100,50 L100,100 L0,100 Z"
                   ]
                 }}
                 transition={{
                   duration: 3 + index,
                   repeat: Infinity,
-                  ease: "easeInOut",
+                  ease: "linear",
                   delay: index * 0.5
                 }}
               />
@@ -113,45 +110,41 @@ export const CashFlowRiver: React.FC<CashFlowRiverProps> = ({
           </svg>
 
           {/* Flow particles */}
-          {[...Array(8)].map((_, i) => (
+          {[...Array(12)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute w-1 h-1 bg-cyan-400/50 rounded-full"
+              className="absolute w-1.5 h-1.5 bg-cyan-400/60 rounded-full shadow-sm shadow-cyan-400/50"
               animate={{
-                x: ["0%", "100%"],
+                x: ["-2%", "102%"],
                 y: [
-                  `${50 + Math.sin(i) * 20}%`,
-                  `${50 + Math.sin(i + 1) * 20}%`,
-                  `${50 + Math.sin(i + 2) * 20}%`
+                  `${55 + Math.sin(i * 0.5) * 10}%`,
+                  `${60 + Math.sin(i * 0.5 + 1) * 10}%`,
+                  `${55 + Math.sin(i * 0.5 + 2) * 10}%`
                 ],
-                opacity: [0, 1, 0]
+                opacity: [0, 1, 1, 0]
               }}
               transition={{
-                duration: 4,
+                duration: 5,
                 repeat: Infinity,
-                delay: i * 0.5,
+                delay: i * 0.4,
                 ease: "linear"
               }}
-              style={{ left: "-5px" }}
             />
           ))}
         </div>
 
         {/* Content */}
-        <div className="relative z-10 p-6 h-full flex flex-col">
+        <div className="relative z-10 p-4 h-full flex flex-col">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-medium text-gray-400">Cash Flow River</h3>
             <div className="flex items-center gap-2">
-              <DollarSign className="w-6 h-6 text-primary" />
               {insight && (
                 <motion.button
                   className="relative group"
-                  onMouseEnter={() => setShowInsight(true)}
-                  onMouseLeave={() => setShowInsight(false)}
-                  whileHover={{ scale: 1.1 }}
+                  onClick={() => setShowInsight(!showInsight)}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <Info className="w-4 h-4 text-gray-400 hover:text-primary transition-colors" />
+                  <Info className="w-4 h-4 text-gray-400 transition-colors" />
                   
                   <AnimatePresence>
                     {showInsight && (
@@ -205,8 +198,8 @@ export const CashFlowRiver: React.FC<CashFlowRiverProps> = ({
           <motion.div
             className="mt-4 space-y-3"
             initial={{ opacity: 0, y: 20 }}
-            animate={showDetails ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.3 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.8 }}
           >
             {/* Income Stream */}
             <div className="space-y-1">
@@ -252,22 +245,6 @@ export const CashFlowRiver: React.FC<CashFlowRiverProps> = ({
               </div>
             </div>
           </motion.div>
-
-          {/* Historical Trend */}
-          <div className="mt-3 flex items-end justify-between h-12">
-            {historicalData.slice(-7).map((data, index) => {
-              const height = (data.surplus / Math.max(...historicalData.map(d => d.surplus))) * 100
-              return (
-                <motion.div
-                  key={index}
-                  className="w-1 bg-cyan-400/50 rounded-full"
-                  initial={{ height: 0 }}
-                  animate={{ height: `${height}%` }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                />
-              )
-            })}
-          </div>
         </div>
       </div>
     </motion.div>

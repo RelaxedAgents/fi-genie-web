@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState, useRef } from "react"
+import React, { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { PieChart, Info } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -24,91 +24,58 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
   insight
 }) => {
   const [hoveredSegment, setHoveredSegment] = useState<number | null>(null)
-  const [rotation, setRotation] = useState(0)
   const [showInsight, setShowInsight] = useState(false)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [displayValue, setDisplayValue] = useState(0)
 
+  // Animate total value
   useEffect(() => {
-    const interval = setInterval(() => {
-      setRotation(prev => (prev + 0.5) % 360)
-    }, 50)
-    return () => clearInterval(interval)
-  }, [])
+    const duration = 2000
+    const steps = 60
+    const increment = totalValue / steps
+    let current = 0
+
+    const timer = setInterval(() => {
+      current += increment
+      if (current >= totalValue) {
+        setDisplayValue(totalValue)
+        clearInterval(timer)
+      } else {
+        setDisplayValue(Math.floor(current))
+      }
+    }, duration / steps)
+
+    return () => clearInterval(timer)
+  }, [totalValue])
 
   const formatCurrency = (value: number) => {
     return `₹${(value / 100000).toFixed(2)}L`
   }
 
-  // Calculate donut segments
-  let currentAngle = 0
+  // Calculate pie segments
+  let cumulativePercentage = 0
   const segments = assets.map((asset, index) => {
-    const startAngle = currentAngle
-    const endAngle = currentAngle + (asset.percentage / 100) * 360
-    currentAngle = endAngle
+    const startAngle = (cumulativePercentage * 360) / 100
+    const endAngle = ((cumulativePercentage + asset.percentage) * 360) / 100
+    cumulativePercentage += asset.percentage
     return { ...asset, startAngle, endAngle, index }
   })
 
-  // Draw particles effect
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+  // Convert angle to radians
+  const angleToRadians = (angle: number) => (angle * Math.PI) / 180
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+  // Create path for each segment
+  const createPath = (startAngle: number, endAngle: number, radius: number) => {
+    const start = angleToRadians(startAngle - 90)
+    const end = angleToRadians(endAngle - 90)
+    const largeArc = endAngle - startAngle > 180 ? 1 : 0
 
-    const particles: Array<{
-      x: number
-      y: number
-      vx: number
-      vy: number
-      size: number
-      color: string
-      life: number
-    }> = []
+    const x1 = Math.cos(start) * radius
+    const y1 = Math.sin(start) * radius
+    const x2 = Math.cos(end) * radius
+    const y2 = Math.sin(end) * radius
 
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-      // Add new particles
-      if (Math.random() < 0.1 && particles.length < 50) {
-        const segment = segments[Math.floor(Math.random() * segments.length)]
-        const angle = (segment.startAngle + segment.endAngle) / 2 + rotation
-        const rad = (angle * Math.PI) / 180
-        const radius = 80 + Math.random() * 20
-        
-        particles.push({
-          x: canvas.width / 2 + Math.cos(rad) * radius,
-          y: canvas.height / 2 + Math.sin(rad) * radius,
-          vx: Math.cos(rad) * 0.5,
-          vy: Math.sin(rad) * 0.5,
-          size: Math.random() * 3 + 1,
-          color: segment.color || '#3B82F6',
-          life: 1
-        })
-      }
-
-      // Update and draw particles
-      particles.forEach((particle, index) => {
-        particle.x += particle.vx
-        particle.y += particle.vy
-        particle.life -= 0.01
-
-        ctx.globalAlpha = particle.life
-        ctx.fillStyle = particle.color + '40'
-        ctx.beginPath()
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2)
-        ctx.fill()
-
-        if (particle.life <= 0) {
-          particles.splice(index, 1)
-        }
-      })
-
-      requestAnimationFrame(animate)
-    }
-
-    animate()
-  }, [segments, rotation])
+    return `M 0 0 L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`
+  }
 
   return (
     <motion.div className="relative h-full">
@@ -120,9 +87,10 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
         "overflow-hidden"
       )}>
         {/* Content */}
-        <div className="relative z-10 p-2.5 h-full flex flex-col">
-          <div className="flex items-center justify-between mb-1.5">
-            <h3 className="text-sm font-medium text-gray-400">Asset Allocation</h3>
+        <div className="relative z-10 p-4 h-full flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium text-gray-400">Asset Allocation</h3>
             <div className="flex items-center gap-2">
               <PieChart className="w-5 h-5 text-primary" />
               {insight && (
@@ -157,116 +125,138 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
             </div>
           </div>
 
-          {/* 3D Donut Chart */}
-          <div className="flex-1 relative flex items-center justify-center">
-            <canvas
-              ref={canvasRef}
-              className="absolute inset-0"
-              width={270}
-              height={270}
-            />
-            
-            <svg
-              className="relative w-28 h-28"
-              viewBox="0 0 200 200"
-              style={{ transform: `rotateY(${rotation}deg)`, transformStyle: 'preserve-3d' }}
+          {/* Total Assets Display */}
+          <motion.div 
+            className="text-center mb-4"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            <motion.p 
+              className="text-3xl font-bold text-white"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
             >
-              {/* Shadow effect */}
-              <ellipse
-                cx="100"
-                cy="110"
-                rx="80"
-                ry="20"
-                fill="rgba(0,0,0,0.2)"
-                filter="blur(10px)"
+              {formatCurrency(displayValue)}
+            </motion.p>
+            <p className="text-sm text-gray-400 mt-1">Total Assets</p>
+          </motion.div>
+
+          {/* Pie Chart */}
+          <div className="flex-1 relative flex items-center justify-center">
+            <motion.svg
+              className="w-56 h-56"
+              viewBox="-120 -120 240 240"
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ duration: 1, type: "spring", stiffness: 100 }}
+            >
+              {/* Background circle */}
+              <circle
+                cx="0"
+                cy="0"
+                r="100"
+                fill="none"
+                stroke="rgba(255,255,255,0.05)"
+                strokeWidth="2"
               />
 
-              {segments.map((segment) => {
-                const startRad = (segment.startAngle * Math.PI) / 180
-                const endRad = (segment.endAngle * Math.PI) / 180
-                const largeArc = segment.endAngle - segment.startAngle > 180 ? 1 : 0
-
-                const innerRadius = 50
-                const outerRadius = 80
-
-                const x1 = 100 + Math.cos(startRad) * outerRadius
-                const y1 = 100 + Math.sin(startRad) * outerRadius
-                const x2 = 100 + Math.cos(endRad) * outerRadius
-                const y2 = 100 + Math.sin(endRad) * outerRadius
-                const x3 = 100 + Math.cos(startRad) * innerRadius
-                const y3 = 100 + Math.sin(startRad) * innerRadius
-                const x4 = 100 + Math.cos(endRad) * innerRadius
-                const y4 = 100 + Math.sin(endRad) * innerRadius
-
-                return (
-                  <motion.g
-                    key={segment.index}
-                    onMouseEnter={() => setHoveredSegment(segment.index)}
-                    onMouseLeave={() => setHoveredSegment(null)}
+              {/* Pie segments */}
+              {segments.map((segment) => (
+                <motion.g
+                  key={segment.index}
+                  onMouseEnter={() => setHoveredSegment(segment.index)}
+                  onMouseLeave={() => setHoveredSegment(null)}
+                >
+                  <motion.path
+                    d={createPath(segment.startAngle, segment.endAngle, 100)}
+                    fill={segment.color}
+                    stroke="rgba(255,255,255,0.1)"
+                    strokeWidth="2"
+                    style={{ cursor: 'pointer' }}
+                    initial={{ scale: 0 }}
                     animate={{
-                      transform: hoveredSegment === segment.index ? 'translateZ(10px)' : 'translateZ(0px)'
+                      scale: hoveredSegment === segment.index ? 1.05 : 1,
+                      filter: hoveredSegment === segment.index ? 'brightness(1.3)' : 'brightness(1)'
                     }}
-                  >
-                    <motion.path
-                      d={`
-                        M ${x1} ${y1}
-                        A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${x2} ${y2}
-                        L ${x4} ${y4}
-                        A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${x3} ${y3}
-                        Z
-                      `}
-                      fill={`url(#gradient-${segment.index})`}
-                      stroke="rgba(255,255,255,0.1)"
-                      strokeWidth="1"
-                      animate={{
-                        scale: hoveredSegment === segment.index ? 1.05 : 1,
-                        filter: hoveredSegment === segment.index ? 'brightness(1.2)' : 'brightness(1)'
-                      }}
-                      style={{ cursor: 'pointer' }}
-                    />
-                  </motion.g>
-                )
-              })}
-
-              {/* Gradients */}
-              <defs>
-                {segments.map((segment) => (
-                  <radialGradient key={segment.index} id={`gradient-${segment.index}`}>
-                    <stop offset="0%" stopColor="#60A5FA" stopOpacity="0.8" />
-                    <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.6" />
-                  </radialGradient>
-                ))}
-              </defs>
-            </svg>
-
-            {/* Center text */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <p className="text-lg font-bold text-white">
-                  {formatCurrency(totalValue)}
-                </p>
-                <p className="text-xs text-gray-400">Total Assets</p>
-              </div>
-            </div>
+                    transition={{ 
+                      scale: {
+                        delay: segment.index * 0.1,
+                        duration: 0.5,
+                        type: "spring",
+                        stiffness: 200
+                      },
+                      filter: { duration: 0.2 }
+                    }}
+                  />
+                  
+                  {/* Hover tooltip */}
+                  {hoveredSegment === segment.index && (
+                    <motion.g
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <rect
+                        x="-50"
+                        y="-130"
+                        width="100"
+                        height="40"
+                        rx="8"
+                        fill="rgba(0,0,0,0.9)"
+                        stroke={segment.color}
+                        strokeWidth="1"
+                      />
+                      <text
+                        x="0"
+                        y="-115"
+                        textAnchor="middle"
+                        fill="white"
+                        fontSize="12"
+                        fontWeight="600"
+                      >
+                        {segment.category}
+                      </text>
+                      <text
+                        x="0"
+                        y="-100"
+                        textAnchor="middle"
+                        fill={segment.color}
+                        fontSize="14"
+                        fontWeight="700"
+                      >
+                        {segment.percentage.toFixed(1)}%
+                      </text>
+                    </motion.g>
+                  )}
+                </motion.g>
+              ))}
+            </motion.svg>
           </div>
 
-          {/* Legend */}
-          <div className="grid grid-cols-2 gap-1 mt-2">
-            {assets.slice(0, 4).map((asset, index) => (
+          {/* Legend - Single line at bottom */}
+          <div className="flex items-center justify-between gap-4 mt-4 px-2">
+            {assets.map((asset, index) => (
               <motion.div
                 key={index}
-                className="flex items-center gap-2"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
+                className="flex items-center gap-1.5 min-w-0"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 + index * 0.1, duration: 0.3 }}
               >
-                <div 
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: '#60A5FA' }}
+                <motion.div 
+                  className="w-3 h-3 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: asset.color }}
+                  animate={{
+                    scale: hoveredSegment === index ? 1.3 : 1
+                  }}
+                  transition={{ duration: 0.2 }}
                 />
-                <div className="flex-1">
+                <div className="flex items-center gap-1 min-w-0">
                   <p className="text-xs text-gray-400 truncate">{asset.category}</p>
-                  <p className="text-xs font-semibold text-white">
+                  <p className="text-xs font-semibold text-white flex-shrink-0">
                     {asset.percentage.toFixed(1)}%
                   </p>
                 </div>

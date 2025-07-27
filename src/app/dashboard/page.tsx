@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout"
 import { FinancialHealthScore } from "@/components/dashboard/FinancialHealthScore"
 import { CreditShield } from "@/components/dashboard/CreditShield"
-import { WealthTree } from "@/components/dashboard/WealthTree"
+import { WealthWeb } from "@/components/dashboard/WealthWeb"
 import { CashFlowRiver } from "@/components/dashboard/CashFlowRiver"
 import { AssetAllocation } from "@/components/dashboard/AssetAllocation"
 import { GrowthTrends } from "@/components/dashboard/GrowthTrends"
@@ -73,9 +73,9 @@ export default function DashboardPage() {
             />
           </motion.div>
 
-          {/* Wealth Tree */}
+          {/* Wealth Web */}
           <motion.div variants={itemVariants} className="relative">
-            <WealthTree 
+            <WealthWeb 
               netWorth={data.financialOverview.netWorth.total}
               assetBreakdown={data.wealthProfile.assetBreakdown}
               monthlyGrowth={data.financialOverview.netWorth.monthlyGrowth}
