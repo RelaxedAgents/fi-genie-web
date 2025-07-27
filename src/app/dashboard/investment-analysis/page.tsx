@@ -7,10 +7,10 @@ import { InvestmentAssetAllocation } from "@/components/dashboard/InvestmentAsse
 import { EPFSummary } from "@/components/dashboard/EPFSummary"
 import { TransactionsAndHoldings } from "@/components/dashboard/TransactionsAndHoldings"
 import { motion, Variants } from "framer-motion"
-import masterData from "@/../../sampleMasterData.json"
+import { useDashboardData } from "@/hooks/useDashboardData"
 
 export default function InvestmentAnalysisPage() {
-  const investmentData = masterData.investmentData
+  const { data, isLoading } = useDashboardData()
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -33,6 +33,21 @@ export default function InvestmentAnalysisPage() {
       }
     }
   }
+
+  if (isLoading || !data) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-[calc(100vh-5rem)]">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-400">Loading investment data...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  const investmentData = data.investmentData
 
   return (
     <DashboardLayout>

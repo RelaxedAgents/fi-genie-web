@@ -108,6 +108,10 @@ export const updateUserProfile = (username: string, avatar: string): void => {
 // Logout user
 export const logout = (): void => {
   clearAuth();
+  // Clear dashboard data on logout
+  const { clearDashboardData, clearApiStatus } = require('@/lib/dashboardData');
+  clearDashboardData();
+  clearApiStatus();
 };
 
 // Get avatar by ID

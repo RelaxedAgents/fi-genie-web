@@ -7,10 +7,10 @@ import { SpendingCategories } from "@/components/dashboard/SpendingCategories"
 import { MonthlyTrends } from "@/components/dashboard/MonthlyTrends"
 import { BankAccountsList } from "@/components/dashboard/BankAccountsList"
 import { motion, Variants } from "framer-motion"
-import masterData from "@/../../sampleMasterData.json"
+import { useDashboardData } from "@/hooks/useDashboardData"
 
 export default function BankingPage() {
-  const bankingData = masterData.bankingData
+  const { data, isLoading } = useDashboardData()
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -33,6 +33,21 @@ export default function BankingPage() {
       }
     }
   }
+
+  if (isLoading || !data) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-[calc(100vh-5rem)]">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-400">Loading banking data...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  const bankingData = data.bankingData
 
   return (
     <DashboardLayout>

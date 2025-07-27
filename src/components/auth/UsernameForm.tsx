@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { ArrowRight, User } from "lucide-react"
@@ -8,9 +8,11 @@ import { Button } from "@/components/common/Button"
 import { ErrorMessage } from "@/components/ui/ErrorMessage"
 import { TypingText } from "@/components/ui/TypingText"
 import { AvatarSelector } from "@/components/auth/AvatarSelector"
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay"
 import { avatars, defaultAvatar } from "@/data/avatars"
 import { updateUserProfile } from "@/lib/auth"
 import { cn } from "@/lib/utils"
+import { getApiStatus } from "@/lib/dashboardData"
 
 // Validate username (4-8 chars, alphanumeric + underscore/dash)
 const isValidUsername = (username: string): boolean => {
@@ -24,6 +26,7 @@ export const UsernameForm: React.FC = () => {
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [showAvatarSection, setShowAvatarSection] = useState(false)
+  const [showLoadingOverlay, setShowLoadingOverlay] = useState(false)
 
   const handleUsernameSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,11 +47,32 @@ export const UsernameForm: React.FC = () => {
     // Save to localStorage
     updateUserProfile(username, selectedAvatar.id)
     
-    // Simulate a small delay for smooth transition
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // Check API status
+    const apiStatus = getApiStatus()
     
-    // Navigate to dashboard
-    router.push("/dashboard")
+    if (apiStatus === 'loading') {
+      // Show loading overlay and wait for API to complete
+      setShowLoadingOverlay(true)
+      
+      // Poll for API completion
+      const checkInterval = setInterval(() => {
+        const currentStatus = getApiStatus()
+        if (currentStatus !== 'loading') {
+          clearInterval(checkInterval)
+          router.push("/dashboard")
+        }
+      }, 500)
+      
+      // Set a timeout to prevent infinite waiting
+      setTimeout(() => {
+        clearInterval(checkInterval)
+        router.push("/dashboard")
+      }, 30000) // 30 seconds timeout
+    } else {
+      // API already completed (success or error), navigate directly
+      await new Promise(resolve => setTimeout(resolve, 500))
+      router.push("/dashboard")
+    }
   }
 
   const handleSkipAvatar = async () => {
@@ -57,12 +81,38 @@ export const UsernameForm: React.FC = () => {
     // Save with default avatar
     updateUserProfile(username, defaultAvatar.id)
     
-    await new Promise(resolve => setTimeout(resolve, 500))
-    router.push("/dashboard")
+    // Check API status
+    const apiStatus = getApiStatus()
+    
+    if (apiStatus === 'loading') {
+      // Show loading overlay and wait for API to complete
+      setShowLoadingOverlay(true)
+      
+      // Poll for API completion
+      const checkInterval = setInterval(() => {
+        const currentStatus = getApiStatus()
+        if (currentStatus !== 'loading') {
+          clearInterval(checkInterval)
+          router.push("/dashboard")
+        }
+      }, 500)
+      
+      // Set a timeout to prevent infinite waiting
+      setTimeout(() => {
+        clearInterval(checkInterval)
+        router.push("/dashboard")
+      }, 30000) // 30 seconds timeout
+    } else {
+      // API already completed (success or error), navigate directly
+      await new Promise(resolve => setTimeout(resolve, 500))
+      router.push("/dashboard")
+    }
   }
 
   return (
-    <div className="space-y-8">
+    <>
+      {showLoadingOverlay && <LoadingOverlay />}
+      <div className="space-y-8">
       {/* Welcome message with typing animation */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -177,6 +227,7 @@ export const UsernameForm: React.FC = () => {
           </div>
         </motion.div>
       )}
-    </div>
+      </div>
+    </>
   )
 }

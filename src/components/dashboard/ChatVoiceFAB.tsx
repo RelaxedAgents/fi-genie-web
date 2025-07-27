@@ -24,7 +24,7 @@ export const ChatVoiceFAB: React.FC = () => {
     })
     
     // Redirect to Gemini Vox with return URL and phone number as query parameters
-    window.location.href = `https://gemini-vox-218281830730.us-central1.run.app?${params.toString()}`
+    window.location.href = `https://gemini-vox-754850392073.us-central1.run.app/?${params.toString()}`
   }
 
   return (

@@ -8,10 +8,10 @@ import { CashFlowRiver } from "@/components/dashboard/CashFlowRiver"
 import { AssetAllocation } from "@/components/dashboard/AssetAllocation"
 import { GrowthTrends } from "@/components/dashboard/GrowthTrends"
 import { motion, Variants } from "framer-motion"
-import masterData from "@/../../sampleMasterData.json"
+import { useDashboardData } from "@/hooks/useDashboardData"
 
 export default function DashboardPage() {
-  const [data, setData] = useState(masterData)
+  const { data, isLoading } = useDashboardData()
   const [selectedInsight, setSelectedInsight] = useState<string | null>(null)
 
   const containerVariants: Variants = {
@@ -35,6 +35,19 @@ export default function DashboardPage() {
         ease: "easeOut" as const
       }
     }
+  }
+
+  if (isLoading || !data) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-[calc(100vh-5rem)]">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-400">Loading your financial data...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   return (

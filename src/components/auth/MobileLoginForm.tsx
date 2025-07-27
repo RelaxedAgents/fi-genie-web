@@ -8,6 +8,8 @@ import { PhoneInput } from "@/components/ui/PhoneInput"
 import { ErrorMessage } from "@/components/ui/ErrorMessage"
 import { Button } from "@/components/common/Button"
 import { isValidIndianMobile, saveUser } from "@/lib/auth"
+import { fetchDashboardData } from "@/lib/api/dashboardApi"
+import { saveDashboardData, setApiStatus } from "@/lib/dashboardData"
 
 export const MobileLoginForm: React.FC = () => {
   const router = useRouter()
@@ -26,11 +28,23 @@ export const MobileLoginForm: React.FC = () => {
 
     setIsLoading(true)
 
-    // Simulate a small delay for better UX
-    await new Promise(resolve => setTimeout(resolve, 500))
-
     // Save user data with just the 10-digit number
     saveUser(phone)
+
+    // Start fetching dashboard data in the background
+    setApiStatus('loading')
+    fetchDashboardData(phone)
+      .then((data) => {
+        saveDashboardData(data)
+        setApiStatus('success')
+      })
+      .catch((error) => {
+        console.error('Failed to fetch dashboard data:', error)
+        setApiStatus('error')
+      })
+
+    // Simulate a small delay for better UX
+    await new Promise(resolve => setTimeout(resolve, 500))
 
     // Navigate to OTP screen
     router.push("/auth/otp")
