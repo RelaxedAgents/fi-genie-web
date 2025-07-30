@@ -3,9 +3,11 @@
 import React from "react"
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout"
 import { PortfolioSummary } from "@/components/dashboard/PortfolioSummary"
+import { PortfolioSummaryMobile } from "@/components/dashboard/PortfolioSummaryMobile"
 import { InvestmentAssetAllocation } from "@/components/dashboard/InvestmentAssetAllocation"
 import { EPFSummary } from "@/components/dashboard/EPFSummary"
 import { TransactionsAndHoldings } from "@/components/dashboard/TransactionsAndHoldings"
+import { MobileDashboardTabs } from "@/components/dashboard/MobileDashboardTabs"
 import { motion, Variants } from "framer-motion"
 import { useDashboardData } from "@/hooks/useDashboardData"
 
@@ -49,10 +51,53 @@ export default function InvestmentAnalysisPage() {
 
   const investmentData = data.investmentData
 
+  const tabs = [
+    { id: 'portfolio', label: 'Portfolio', scrollable: true },
+    { id: 'assets', label: 'Assets', scrollable: true }, // Will be scrollable on small screens only
+    { id: 'activity', label: 'Activity', scrollable: false }, // Never scrollable (has internal scroll)
+  ]
+
+  const tabContent = {
+    portfolio: (
+      <PortfolioSummaryMobile 
+        portfolioData={investmentData.portfolioSummary}
+      />
+    ),
+    assets: (
+      <div className="flex flex-col gap-3">
+        <div className="min-h-[300px]">
+          <InvestmentAssetAllocation 
+            assetData={investmentData.assetAllocation}
+            totalValue={investmentData.portfolioSummary.totalValue}
+          />
+        </div>
+        <div className="min-h-[400px]">
+          <EPFSummary 
+            epfData={investmentData.epfSummary}
+          />
+        </div>
+      </div>
+    ),
+    activity: (
+      <TransactionsAndHoldings 
+        transactions={investmentData.recentTransactions}
+        holdings={investmentData.topHoldings}
+      />
+    ),
+  }
+
   return (
     <DashboardLayout>
+      {/* Mobile Tabbed View */}
+      <div className="block md:hidden h-[calc(100vh-9rem)]">
+        <MobileDashboardTabs tabs={tabs} defaultTab="portfolio">
+          {tabContent}
+        </MobileDashboardTabs>
+      </div>
+
+      {/* Desktop Grid View */}
       <motion.div 
-        className="relative h-[calc(100vh-5rem)] p-2 overflow-hidden flex flex-col gap-3"
+        className="hidden md:flex flex-col gap-3 h-[calc(100vh-5rem)] p-3 overflow-hidden"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -98,7 +143,6 @@ export default function InvestmentAnalysisPage() {
             />
           </motion.div>
         </motion.div>
-
       </motion.div>
     </DashboardLayout>
   )

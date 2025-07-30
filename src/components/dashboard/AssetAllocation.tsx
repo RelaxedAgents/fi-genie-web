@@ -96,23 +96,23 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
         {/* Content */}
         <div className="relative z-10 flex flex-col h-full p-4">
           {/* Header */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <h3 className="text-base font-medium text-gray-400">Asset Allocation</h3>
-              <p className="text-gray-500 text-sm">Portfolio breakdown</p>
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <h3 className="text-sm sm:text-base font-medium text-gray-400">Asset Allocation</h3>
+              <p className="text-gray-500 text-xs sm:text-sm">Portfolio breakdown</p>
             </div>
-            <PieChart className="w-5 h-5 text-primary" />
+            <PieChart className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
           </div>
 
           {/* AI Insight - At Top */}
           {insight && (
-            <div className="mb-4">
+            <div className="mb-3 sm:mb-4">
               <div className="bg-white/[0.06] rounded-lg p-1.5 backdrop-blur-sm border border-white/[0.08]">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <div className="flex items-start sm:items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0">
                     <PieChart className="w-2.5 h-2.5 text-primary" />
                   </div>
-                  <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0">
                     <p className="text-xs font-medium text-white">AI Insight:</p>
                     <p className="text-xs text-gray-300">
                       Top allocation: <span className="text-primary font-medium">{assets[0]?.category}</span>. 
@@ -124,12 +124,16 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
             </div>
           )}
 
-          {/* Donut Chart Left Half + Values Right Half in 2 Columns */}
-          <div className="flex-1 flex gap-3">
-            {/* Left Half - Donut Chart */}
-            <div className="w-1/2 flex items-center justify-center">
+          {/* Donut Chart + Values - Responsive Layout */}
+          <div className="flex-1 flex flex-col lg:flex-row gap-4 lg:gap-3">
+            {/* Donut Chart - Full width on mobile, half on desktop */}
+            <div className="flex items-center justify-center lg:w-1/2">
               <div className="relative">
-                <svg width="260" height="260" className="transform -rotate-90">
+                <svg 
+                  viewBox="0 0 260 260" 
+                  className="w-48 h-48 sm:w-56 sm:h-56 lg:w-64 lg:h-64 transform -rotate-90"
+                  preserveAspectRatio="xMidYMid meet"
+                >
                   {assets.map((asset, index) => {
                     const radius = 100
                     const circumference = 2 * Math.PI * radius
@@ -159,16 +163,16 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
                 
                 {/* Center Text */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <div className="text-3xl font-bold text-white">
+                  <div className="text-2xl sm:text-3xl font-bold text-white">
                     {formatCurrency(displayValue)}
                   </div>
-                  <div className="text-base text-gray-400">Total Assets</div>
+                  <div className="text-sm sm:text-base text-gray-400">Total Assets</div>
                 </div>
               </div>
             </div>
 
-            {/* Right Half - Values in 2 Columns */}
-            <div className="w-1/2 grid grid-cols-2 gap-2 content-center">
+            {/* Values - Grid on mobile and desktop */}
+            <div className="grid grid-cols-2 gap-2 content-center lg:w-1/2">
               {assets.map((asset, index) => (
                 <motion.div
                   key={index}
@@ -185,13 +189,13 @@ export const AssetAllocation: React.FC<AssetAllocationProps> = ({
                     }}
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="text-white text-xs font-medium truncate">
+                    <div className="text-white text-[11px] sm:text-xs font-medium truncate">
                       {asset.category}
                     </div>
-                    <div className="text-xs text-gray-400">
+                    <div className="text-[10px] sm:text-xs text-gray-400">
                       {formatCurrency(asset.value)}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-[10px] sm:text-xs text-gray-500">
                       {asset.percentage}%
                     </div>
                   </div>

@@ -57,40 +57,36 @@ export const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({
         {/* Content */}
         <div className="relative z-10 p-4 h-full flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <h3 className="text-base font-medium text-gray-400">Financial Health</h3>
-              <p className="text-gray-500 text-sm">Overall score</p>
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <h3 className="text-sm sm:text-base font-medium text-gray-400">Financial Health</h3>
+              <p className="text-gray-500 text-xs sm:text-sm">Overall score</p>
             </div>
           </div>
 
-          {/* AI Insight - At Top */}
+          {/* AI Insight - Compact for mobile */}
           {insight && (
-            <div className="mb-3">
+            <div className="mb-2 sm:mb-3">
               <div className="bg-white/[0.06] rounded-lg p-1.5 backdrop-blur-sm border border-white/[0.08]">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                    <Info className="w-2.5 h-2.5 text-primary" />
+                <div className="flex items-start gap-2">
+                  <div className="w-3.5 h-3.5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Info className="w-2 h-2 text-primary" />
                   </div>
-                  <div className="flex items-center gap-2 min-w-0">
-                    <p className="text-xs font-medium text-white">AI Insight:</p>
-                    <p className="text-xs text-gray-300">
-                      Score: <span className="text-primary font-medium">{score}/100</span>. 
-                      Focus on improving debt management for better health.
-                    </p>
-                  </div>
+                  <p className="text-[11px] sm:text-xs text-gray-300">
+                    <span className="text-white font-medium">AI:</span> Score {score}/100. Focus on debt management.
+                  </p>
                 </div>
               </div>
             </div>
           )}
           
-          {/* Score Display with Ring */}
-          <svg 
-            className="mx-auto my-2 block flex-shrink-0"
-            width="110" 
-            height="110" 
-            viewBox="0 0 140 140"
-          >
+          {/* Score Display with Ring - Larger on mobile */}
+          <div className="flex-1 flex items-center justify-center py-2">
+            <svg 
+              className="block flex-shrink-0 w-32 h-32 sm:w-36 sm:h-36 md:w-28 md:h-28"
+              viewBox="0 0 140 140"
+              preserveAspectRatio="xMidYMid meet"
+            >
                 {/* Circular pulse effect - moved to back */}
                 <motion.circle
                   cx="70"
@@ -182,7 +178,7 @@ export const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({
                 y="75"
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="text-4xl font-bold fill-white"
+                className="font-bold fill-white"
                 style={{ fontSize: '2.75rem' }}
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -217,11 +213,12 @@ export const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({
                   }}
                 />
               ))}
-          </svg>
+            </svg>
+          </div>
 
           {/* Status Text */}
           <motion.p 
-            className="text-white font-medium text-sm mb-3"
+            className="text-white font-medium text-sm sm:text-base mb-3 text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
@@ -229,9 +226,9 @@ export const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({
             {status}
           </motion.p>
           
-          {/* Component Scores - Always visible */}
+          {/* Component Scores - 2x2 grid optimized for mobile */}
           <motion.div
-            className="grid grid-cols-2 gap-1 w-full flex-shrink-0"
+            className="grid grid-cols-2 gap-2 w-full flex-shrink-0"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.8 }}
@@ -239,15 +236,15 @@ export const FinancialHealthScore: React.FC<FinancialHealthScoreProps> = ({
             {Object.entries(components).map(([key, value], index) => (
               <motion.div
                 key={key}
-                className="bg-white/[0.03] rounded-md px-1.5 py-1.5 backdrop-blur-sm border border-white/[0.05]"
+                className="bg-white/[0.05] rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 backdrop-blur-sm border border-white/[0.08]"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 1 + index * 0.1, duration: 0.3 }}
               >
-                <div className="text-[10px] text-gray-500 capitalize">
+                <div className="text-[10px] sm:text-xs text-gray-400 capitalize">
                   {key.replace(/([A-Z])/g, ' $1').trim()}
                 </div>
-                <div className="text-xs font-semibold text-white">{value}</div>
+                <div className="text-sm sm:text-base font-semibold text-white">{value}</div>
               </motion.div>
             ))}
           </motion.div>

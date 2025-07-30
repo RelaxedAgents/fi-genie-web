@@ -69,25 +69,25 @@ export const GrowthTrends: React.FC<GrowthTrendsProps> = ({
         </div>
 
         {/* Content */}
-        <div className="relative z-10 p-3 h-full flex flex-col">
+        <div className="relative z-10 p-3 sm:p-4 h-full flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <h3 className="text-base font-medium text-gray-400">Growth Trends</h3>
-              <p className="text-gray-500 text-sm">Performance analysis</p>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <h3 className="text-sm sm:text-base font-medium text-gray-400">Growth Trends</h3>
+              <p className="text-gray-500 text-xs sm:text-sm hidden sm:inline">Performance analysis</p>
             </div>
-            <Activity className="w-5 h-5 text-primary" />
+            <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
           </div>
 
           {/* AI Insight - At Top */}
           {insight && (
-            <div className="mb-3">
+            <div className="mb-2 sm:mb-3">
               <div className="bg-white/[0.06] rounded-lg p-1.5 backdrop-blur-sm border border-white/[0.08]">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <div className="flex items-start sm:items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0">
                     <TrendingUp className="w-2.5 h-2.5 text-primary" />
                   </div>
-                  <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0">
                     <p className="text-xs font-medium text-white">AI Insight:</p>
                     <p className="text-xs text-gray-300">
                       Trend: <span className="text-primary font-medium">Positive growth</span>. 
@@ -100,7 +100,7 @@ export const GrowthTrends: React.FC<GrowthTrendsProps> = ({
           )}
 
           {/* Chart Type Selector */}
-          <div className="flex gap-1 mb-2">
+          <div className="flex gap-1 mb-2 overflow-x-auto no-scrollbar">
             {[
               { key: 'netWorth', label: 'Net Worth', color: '#10b981' },
               { key: 'creditScore', label: 'Credit Score', color: '#3b82f6' },
@@ -109,7 +109,7 @@ export const GrowthTrends: React.FC<GrowthTrendsProps> = ({
               <motion.button
                 key={chart.key}
                 className={cn(
-                  "px-2.5 py-0.5 rounded-full text-xs font-medium transition-all",
+                  "px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium transition-all whitespace-nowrap",
                   activeChart === chart.key
                     ? "bg-primary/20 text-primary border border-primary/30"
                     : "bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10"
@@ -124,13 +124,13 @@ export const GrowthTrends: React.FC<GrowthTrendsProps> = ({
           </div>
 
           {/* Value display - Moved above the chart */}
-          <div className="flex justify-between items-center mb-3">
-            <div className="text-xs text-gray-500">
+          <div className="flex justify-between items-center mb-2 sm:mb-3">
+            <div className="text-[10px] sm:text-xs text-gray-500">
               {activeData[0]?.month} - {activeData[activeData.length - 1]?.month}
             </div>
-            <div className="flex items-center gap-2 bg-white/[0.08] rounded-lg px-3 py-1.5 border border-white/[0.1]">
-              <TrendingUp className="w-3 h-3 text-green-400" />
-              <span className="text-sm font-semibold text-white">
+            <div className="flex items-center gap-1 sm:gap-2 bg-white/[0.08] rounded-lg px-2 sm:px-3 py-1 sm:py-1.5 border border-white/[0.1]">
+              <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-400" />
+              <span className="text-xs sm:text-sm font-semibold text-white">
                 {activeChart === 'netWorth' && '+17.7%'}
                 {activeChart === 'creditScore' && '+2.5%'}
                 {activeChart === 'cashFlow' && '-13.3%'}
@@ -138,10 +138,10 @@ export const GrowthTrends: React.FC<GrowthTrendsProps> = ({
             </div>
           </div>
 
-          {/* Line Chart - 1.5x larger size with visible labels */}
+          {/* Line Chart - Responsive sizing */}
           <div className="flex-1 mb-2">
-            <div className="relative bg-white/[0.02] rounded-lg p-2" style={{ height: '270px' }}>
-              <svg width="100%" height="210px" viewBox="0 0 300 150" className="overflow-visible">
+            <div className="relative bg-white/[0.02] rounded-lg p-2 h-full min-h-[200px] sm:min-h-[250px]">
+              <svg width="100%" height="100%" viewBox="0 0 300 150" preserveAspectRatio="xMidYMid meet" className="overflow-visible">
                 {/* Subtle Grid lines */}
                 {[0, 1, 2, 3, 4, 5].map((i) => (
                   <line
@@ -209,7 +209,7 @@ export const GrowthTrends: React.FC<GrowthTrendsProps> = ({
               {/* Month labels - positioned at bottom with guaranteed space */}
               <div className="absolute bottom-2 left-2 right-2 flex justify-between">
                 {activeData.map((data, index) => (
-                  <span key={index} className="text-xs text-gray-400 font-medium">
+                  <span key={index} className="text-[9px] sm:text-xs text-gray-400 font-medium">
                     {data.month}
                   </span>
                 ))}

@@ -5,10 +5,12 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout"
 import { FinancialHealthScore } from "@/components/dashboard/FinancialHealthScore"
 import { CreditShield } from "@/components/dashboard/CreditShield"
 import { CashFlowRiver } from "@/components/dashboard/CashFlowRiver"
+import { CashFlowRiverMobile } from "@/components/dashboard/CashFlowRiverMobile"
 import { AssetAllocation } from "@/components/dashboard/AssetAllocation"
 import { GrowthTrends } from "@/components/dashboard/GrowthTrends"
 import { motion, Variants } from "framer-motion"
 import { useDashboardData } from "@/hooks/useDashboardData"
+import { MobileDashboardTabs } from "@/components/dashboard/MobileDashboardTabs"
 
 export default function DashboardPage() {
   const { data, isLoading } = useDashboardData()
@@ -40,7 +42,7 @@ export default function DashboardPage() {
   if (isLoading || !data) {
     return (
       <DashboardLayout>
-        <div className="flex items-center justify-center h-[calc(100vh-5rem)]">
+        <div className="flex items-center justify-center min-h-[calc(100vh-5rem)]">
           <div className="text-center">
             <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-gray-400">Loading your financial data...</p>
@@ -50,19 +52,81 @@ export default function DashboardPage() {
     )
   }
 
+  const tabs = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'insights', label: 'Insights' },
+    { id: 'trends', label: 'Trends' },
+    { id: 'assets', label: 'Assets' },
+  ]
+
+  const tabContent = {
+    overview: (
+      <div className="space-y-3">
+        <FinancialHealthScore 
+          score={data.financialOverview.financialHealthScore.overall}
+          components={data.financialOverview.financialHealthScore.components}
+          status={data.financialOverview.financialHealthScore.status}
+          insight={data.aiGeneratedInsights.overallProfile}
+        />
+        <CreditShield 
+          netWorth={{
+            total: data.financialOverview.netWorth.total,
+            totalAssets: data.financialOverview.netWorth.totalAssets,
+            totalLiabilities: data.financialOverview.netWorth.totalLiabilities,
+            debtToAssetRatio: data.financialOverview.netWorth.debtToAssetRatio
+          }}
+          creditScore={{
+            score: data.financialOverview.creditScore.score,
+            maxScore: data.financialOverview.creditScore.maxScore,
+            rating: data.financialOverview.creditScore.rating
+          }}
+          insight={data.aiGeneratedInsights.creditInsights[0]}
+        />
+      </div>
+    ),
+    insights: (
+      <CashFlowRiverMobile 
+        creditInsights={data.aiGeneratedInsights.creditInsights}
+        netWorthInsights={data.aiGeneratedInsights.netWorthInsights}
+        bankingInsights={data.aiGeneratedInsights.bankingInsights}
+        investmentInsights={data.aiGeneratedInsights.investmentInsights}
+      />
+    ),
+    trends: (
+      <GrowthTrends 
+        netWorthHistory={data.historicalData.netWorth}
+        creditScoreHistory={data.historicalData.creditScore}
+        cashFlowHistory={data.historicalData.monthlyCashFlow}
+        insight={data.aiGeneratedInsights.creditInsights[1]}
+      />
+    ),
+    assets: (
+      <AssetAllocation 
+        assets={data.wealthProfile.assetBreakdown}
+        totalValue={data.financialOverview.netWorth.totalAssets}
+        insight={data.aiGeneratedInsights.netWorthInsights[2]}
+      />
+    ),
+  }
+
   return (
     <DashboardLayout>
+      {/* Mobile Tabbed View */}
+      <div className="block md:hidden h-[calc(100vh-9rem)]">
+        <MobileDashboardTabs tabs={tabs} defaultTab="overview">
+          {tabContent}
+        </MobileDashboardTabs>
+      </div>
+
+      {/* Desktop Grid View */}
       <motion.div 
-        className="relative h-[calc(100vh-5rem)] p-2 overflow-hidden flex flex-col gap-2"
+        className="hidden md:flex flex-col gap-3 h-[calc(100vh-5rem)] p-3 overflow-hidden"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
         {/* Top Row: Financial Health Score + Main Metrics */}
-        <motion.div 
-          className="grid grid-cols-3 gap-3 h-[calc(40%-4px)]"
-          variants={containerVariants}
-        >
+        <div className="grid grid-cols-3 gap-3 h-[calc(40%-4px)]">
           {/* Financial Health Score - Left */}
           <motion.div variants={itemVariants} className="relative">
             <FinancialHealthScore 
@@ -100,13 +164,10 @@ export default function DashboardPage() {
               investmentInsights={data.aiGeneratedInsights.investmentInsights}
             />
           </motion.div>
-        </motion.div>
+        </div>
 
         {/* Bottom Row: Asset Allocation + Growth Trends */}
-        <motion.div 
-          className="grid grid-cols-2 gap-3 h-[calc(60%-4px)]"
-          variants={containerVariants}
-        >
+        <div className="grid grid-cols-2 gap-3 h-[calc(60%-4px)]">
           {/* Asset Allocation */}
           <motion.div variants={itemVariants} className="relative h-full">
             <AssetAllocation 
@@ -125,8 +186,7 @@ export default function DashboardPage() {
               insight={data.aiGeneratedInsights.creditInsights[1]}
             />
           </motion.div>
-        </motion.div>
-
+        </div>
       </motion.div>
     </DashboardLayout>
   )

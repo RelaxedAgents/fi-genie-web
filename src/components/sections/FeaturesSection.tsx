@@ -125,22 +125,22 @@ export const FeaturesSection: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.5, duration: 0.6 }}
-          className="mt-20 text-center"
+          className="mt-20 text-center px-4"
         >
-          <div className="inline-flex items-center justify-center glass rounded-2xl p-8 gap-8">
-            <div>
-              <p className="text-4xl font-bold gradient-text">98%</p>
-              <p className="text-gray-400 text-sm mt-1">User Satisfaction</p>
+          <div className="inline-flex flex-col sm:flex-row items-center justify-center glass rounded-2xl p-4 sm:p-8 gap-4 sm:gap-8 w-full max-w-fit">
+            <div className="text-center">
+              <p className="text-3xl sm:text-4xl font-bold gradient-text">98%</p>
+              <p className="text-gray-400 text-xs sm:text-sm mt-1">User Satisfaction</p>
             </div>
-            <div className="w-px h-16 bg-gray-700" />
-            <div>
-              <p className="text-4xl font-bold gradient-text">24/7</p>
-              <p className="text-gray-400 text-sm mt-1">AI Assistance</p>
+            <div className="hidden sm:block w-px h-16 bg-gray-700" />
+            <div className="text-center">
+              <p className="text-3xl sm:text-4xl font-bold gradient-text">24/7</p>
+              <p className="text-gray-400 text-xs sm:text-sm mt-1">AI Assistance</p>
             </div>
-            <div className="w-px h-16 bg-gray-700" />
-            <div>
-              <p className="text-4xl font-bold gradient-text">256-bit</p>
-              <p className="text-gray-400 text-sm mt-1">Encryption</p>
+            <div className="hidden sm:block w-px h-16 bg-gray-700" />
+            <div className="text-center">
+              <p className="text-3xl sm:text-4xl font-bold gradient-text">256-bit</p>
+              <p className="text-gray-400 text-xs sm:text-sm mt-1">Encryption</p>
             </div>
           </div>
         </motion.div>

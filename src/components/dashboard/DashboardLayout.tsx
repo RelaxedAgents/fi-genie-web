@@ -11,6 +11,7 @@ import { UserProfileDropdown } from "@/components/dashboard/UserProfileDropdown"
 import { ChatVoiceFAB } from "@/components/dashboard/ChatVoiceFAB"
 import { getCurrentUser } from "@/lib/auth"
 import { cn } from "@/lib/utils"
+import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -39,29 +40,31 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
         <div className="relative z-10 min-h-screen flex flex-col">
           {/* Header */}
           <header className="sticky top-0 z-50">
-            <div className="px-6 py-4">
+            <div className="px-4 sm:px-6 py-3 sm:py-4">
               <div className="flex items-center justify-between">
                 {/* Logo */}
                 <Link href="/dashboard">
                   <motion.div
-                    className="flex items-center gap-3 group"
+                    className="flex items-center gap-2 sm:gap-3 group"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
                     <div className="relative">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                        <span className="text-white font-bold text-xl">Fi</span>
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-lg shadow-primary/20">
+                        <span className="text-white font-bold text-lg sm:text-xl">Fi</span>
                       </div>
                       <div className="absolute inset-0 rounded-xl bg-gradient-primary blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
                     </div>
-                    <span className="text-xl font-display font-bold gradient-text">
+                    <span className="text-lg sm:text-xl font-display font-bold gradient-text">
                       FiGenie
                     </span>
                   </motion.div>
                 </Link>
 
-                {/* Navigation */}
-                <LiquidGlassNavigation />
+                {/* Navigation - Hide on mobile */}
+                <div className="hidden md:block">
+                  <LiquidGlassNavigation />
+                </div>
 
                 {/* User Profile */}
                 <UserProfileDropdown />
@@ -70,7 +73,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 relative">
+          <main className="flex-1 relative pb-16 md:pb-0"> {/* Add padding bottom for mobile nav */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -81,8 +84,13 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             </motion.div>
           </main>
 
-          {/* Chat/Voice FAB */}
-          <ChatVoiceFAB />
+          {/* Chat/Voice FAB - Hidden on mobile, visible on desktop */}
+          <div className="hidden md:block">
+            <ChatVoiceFAB />
+          </div>
+
+          {/* Mobile Bottom Navigation */}
+          <MobileBottomNav />
         </div>
       </PageTransition>
     </div>

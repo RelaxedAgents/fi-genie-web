@@ -104,22 +104,22 @@ export const CreditShield: React.FC<OverviewProps> = ({
 
         {/* Content */}
         <div className="relative z-10 p-4 h-full flex flex-col">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <h3 className="text-base font-medium text-gray-400">Overview</h3>
-              <p className="text-gray-500 text-sm">Financial summary</p>
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <h3 className="text-sm sm:text-base font-medium text-gray-400">Overview</h3>
+              <p className="text-gray-500 text-xs sm:text-sm">Financial summary</p>
             </div>
           </div>
 
           {/* AI Insight - At Top */}
           {insight && (
-            <div className="mb-8">
+            <div className="mb-4 sm:mb-6">
               <div className="bg-white/[0.06] rounded-lg p-1.5 backdrop-blur-sm border border-white/[0.08]">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <div className="flex items-start sm:items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0">
                     <Info className="w-2.5 h-2.5 text-primary" />
                   </div>
-                  <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0">
                     <p className="text-xs font-medium text-white">AI Insight:</p>
                     <p className="text-xs text-gray-300">
                       Net Worth: <span className="text-primary font-medium">{formatCurrency(netWorth.total)}</span>. 
@@ -132,35 +132,35 @@ export const CreditShield: React.FC<OverviewProps> = ({
           )}
 
           {/* Main Display - Net Worth and Credit Score - Centered */}
-          <div className="flex justify-center items-center mb-6">
-            <div className="flex gap-16 items-center">
+          <div className="flex-1 flex justify-center items-center mb-4 sm:mb-6">
+            <div className="flex gap-8 sm:gap-12 lg:gap-16 items-center">
               <div className="text-center">
                 <motion.div
-                  className="text-4xl font-bold text-green-400 mb-2"
+                  className="text-2xl sm:text-3xl lg:text-4xl font-bold text-green-400 mb-1 sm:mb-2"
                   initial={{ scale: 0.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.5 }}
                 >
                   {formatCurrency(displayNetWorth)}
                 </motion.div>
-                <p className="text-sm text-gray-400">Net Worth</p>
+                <p className="text-xs sm:text-sm text-gray-400">Net Worth</p>
               </div>
               <div className="text-center">
                 <motion.div
-                  className="text-4xl font-bold text-primary mb-2"
+                  className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-1 sm:mb-2"
                   initial={{ scale: 0.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
                   {displayCreditScore}
                 </motion.div>
-                <p className="text-sm text-gray-400">Credit Score</p>
+                <p className="text-xs sm:text-sm text-gray-400">Credit Score</p>
               </div>
             </div>
           </div>
 
           {/* Overview Cards - Removed Credit Score */}
-          <div className="flex-1 space-y-4">
+          <div className="space-y-2 sm:space-y-3">
             {/* Assets */}
             <motion.div
               className="bg-white/[0.03] rounded-lg p-2 backdrop-blur-sm border border-white/[0.05]"
@@ -170,10 +170,10 @@ export const CreditShield: React.FC<OverviewProps> = ({
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-green-400" />
-                  <span className="text-xs text-gray-400">Total Assets</span>
+                  <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-400" />
+                  <span className="text-xs sm:text-sm text-gray-400">Total Assets</span>
                 </div>
-                <span className="text-sm font-semibold text-green-400">
+                <span className="text-xs sm:text-sm font-semibold text-green-400">
                   {formatCurrency(netWorth.totalAssets)}
                 </span>
               </div>
@@ -188,10 +188,10 @@ export const CreditShield: React.FC<OverviewProps> = ({
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <TrendingDown className="w-4 h-4 text-red-400" />
-                  <span className="text-xs text-gray-400">Total Liabilities</span>
+                  <TrendingDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-400" />
+                  <span className="text-xs sm:text-sm text-gray-400">Total Liabilities</span>
                 </div>
-                <span className="text-sm font-semibold text-red-400">
+                <span className="text-xs sm:text-sm font-semibold text-red-400">
                   {formatCurrency(netWorth.totalLiabilities)}
                 </span>
               </div>
@@ -206,10 +206,10 @@ export const CreditShield: React.FC<OverviewProps> = ({
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-blue-400" />
-                  <span className="text-xs text-gray-400">Debt to Asset Ratio</span>
+                  <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400" />
+                  <span className="text-xs sm:text-sm text-gray-400">Debt to Asset Ratio</span>
                 </div>
-                <span className="text-sm font-semibold text-blue-400">
+                <span className="text-xs sm:text-sm font-semibold text-blue-400">
                   {netWorth.debtToAssetRatio.toFixed(1)}%
                 </span>
               </div>
