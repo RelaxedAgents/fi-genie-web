@@ -78,7 +78,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 relative pb-16 md:pb-0"> {/* Add padding bottom for mobile nav */}
+          <main className="flex-1 relative"> {/* Remove padding bottom, let children handle their own height */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

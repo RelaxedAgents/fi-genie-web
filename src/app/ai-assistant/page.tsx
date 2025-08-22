@@ -15,7 +15,25 @@ export default function AIAssistantPage() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-[calc(100vh-80px)] flex flex-col">
+      {/* Calculate height accounting for header and mobile bottom nav */}
+      <div 
+        className="flex flex-col overflow-hidden"
+        style={{
+          height: 'calc(100vh - var(--header-height) - var(--mobile-nav-height, 0px))'
+        }}
+      >
+        <style jsx>{`
+          :root {
+            --header-height: 64px;
+            --mobile-nav-height: 0px;
+          }
+          @media (max-width: 768px) {
+            :root {
+              --header-height: 56px;
+              --mobile-nav-height: 72px; /* nav height + safe area */
+            }
+          }
+        `}</style>
         {/* Tab Navigation */}
         <div className="px-4 sm:px-6 py-4">
           <div className="max-w-4xl mx-auto">
@@ -37,7 +55,7 @@ export default function AIAssistantPage() {
         </div>
 
         {/* Tab Content */}
-        <div className="flex-1 px-4 sm:px-6 pb-4">
+        <div className="h-full px-4 sm:px-6 pb-4 overflow-hidden">
           <div className="max-w-4xl mx-auto h-full">
             <AnimatePresence mode="wait">
               {activeTab === "chat" ? (

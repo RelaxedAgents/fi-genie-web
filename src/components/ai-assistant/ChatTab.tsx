@@ -124,12 +124,12 @@ export const ChatTab: React.FC = () => {
   }
 
   return (
-    <div className="h-full flex flex-col glass rounded-2xl">
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
-        {messages.length === 0 ? (
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center">
+    <div className="h-full flex flex-col glass rounded-2xl overflow-hidden">
+      {/* Messages Area - Scrollable */}
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 thin-scrollbar">
+        <div className="space-y-4">
+          {messages.length === 0 ? (
+            <div className="text-center pt-8">
               <h3 className="text-xl sm:text-2xl font-light text-white/80 mb-2">
                 Start a conversation
               </h3>
@@ -137,32 +137,32 @@ export const ChatTab: React.FC = () => {
                 Ask me anything about your finances
               </p>
             </div>
-          </div>
-        ) : (
-          <>
-            <AnimatePresence initial={false}>
-              {messages.map((message, index) => (
-                <ChatMessage
-                  key={message.id}
-                  message={message}
-                  streamingContent={
-                    message.isStreaming ? streamingContent : undefined
-                  }
-                />
-              ))}
-            </AnimatePresence>
-            {isLoading && messages[messages.length - 1]?.role === "user" && (
-              <StreamingIndicator message={progressMessage} />
-            )}
-          </>
-        )}
-        <div ref={messagesEndRef} />
+          ) : (
+            <>
+              <AnimatePresence initial={false}>
+                {messages.map((message, index) => (
+                  <ChatMessage
+                    key={message.id}
+                    message={message}
+                    streamingContent={
+                      message.isStreaming ? streamingContent : undefined
+                    }
+                  />
+                ))}
+              </AnimatePresence>
+              {isLoading && messages[messages.length - 1]?.role === "user" && (
+                <StreamingIndicator message={progressMessage} />
+              )}
+            </>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
-      {/* Input Area */}
-      <div className="border-t border-white/10 p-4">
-        <div className="flex gap-2 items-end">
-          <div className="flex-1 relative">
+      {/* Input Area - Fixed at bottom */}
+      <div className="border-t border-white/10 p-4 bg-dark/50 backdrop-blur-sm">
+        <div className="flex gap-3 items-end max-w-4xl mx-auto">
+          <div className="flex-1">
             <textarea
               ref={textareaRef}
               value={input}
@@ -186,7 +186,7 @@ export const ChatTab: React.FC = () => {
             disabled={!input.trim() || isLoading}
             className={cn(
               "p-3 rounded-xl transition-all duration-200",
-              "flex items-center justify-center",
+              "flex items-center justify-center min-w-[48px]",
               input.trim() && !isLoading
                 ? "bg-gradient-to-r from-primary to-primary-light text-white shadow-lg shadow-primary/20 hover:shadow-primary/30"
                 : "bg-white/5 text-white/30 cursor-not-allowed"

@@ -7,7 +7,8 @@ import {
   LayoutDashboard, 
   Building2, 
   TrendingUp, 
-  Sparkles
+  Sparkles,
+  Target
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -19,9 +20,10 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Goals", href: "/dashboard/goals", icon: Target },
+  { name: "AI Chat", href: "/ai-assistant", icon: Sparkles },
   { name: "Banking", href: "/dashboard/banking", icon: Building2 },
   { name: "Invest", href: "/dashboard/investment-analysis", icon: TrendingUp },
-  { name: "AI Chat", href: "/chat", icon: Sparkles },
 ]
 
 export const MobileBottomNav: React.FC = () => {
