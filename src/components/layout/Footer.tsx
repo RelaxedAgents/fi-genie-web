@@ -2,7 +2,8 @@
 
 import React from "react"
 import { motion } from "framer-motion"
-import { Brain, Twitter, Linkedin, Github, Mail } from "lucide-react"
+import Image from "next/image"
+import { Twitter, Linkedin, Github, Mail } from "lucide-react"
 import { fadeInUp } from "@/lib/animations"
 
 const footerLinks = {
@@ -53,9 +54,15 @@ export const Footer: React.FC = () => {
               variants={fadeInUp}
               className="flex items-center space-x-2 mb-4"
             >
-              <Brain className="w-8 h-8 text-primary" />
+              <Image 
+                src="/arthaai-logo.png" 
+                alt="ArthaAI Logo" 
+                width={48} 
+                height={48} 
+                className="w-12 h-12"
+              />
               <span className="text-2xl font-display font-bold gradient-text">
-                FiGenie
+                ArthaAI
               </span>
             </motion.div>
             <motion.p
@@ -126,7 +133,7 @@ export const Footer: React.FC = () => {
         >
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-gray-500 text-sm">
-              © 2024 FiGenie. All rights reserved.
+              © 2024 ArthaAI. All rights reserved.
             </p>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">

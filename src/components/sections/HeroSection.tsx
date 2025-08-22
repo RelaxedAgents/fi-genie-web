@@ -11,7 +11,7 @@ export const HeroSection: React.FC = () => {
   const router = useRouter()
 
   const handleGetStarted = () => {
-    router.push("/auth/login")
+    router.push("/voice-assistant")
   }
 
   return (

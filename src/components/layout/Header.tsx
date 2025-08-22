@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Brain } from "lucide-react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/common/Button"
 import { cn } from "@/lib/utils"
@@ -47,23 +47,29 @@ export const Header: React.FC = () => {
               whileTap={{ scale: 0.95 }}
             >
               <div className="relative">
-                <Brain className="w-8 h-8 text-primary group-hover:text-primary-light transition-colors" />
+                <Image 
+                  src="/arthaai-logo.png" 
+                  alt="ArthaAI Logo" 
+                  width={48} 
+                  height={48} 
+                  className="w-12 h-12 group-hover:scale-110 transition-transform"
+                />
                 <div className="absolute inset-0 bg-primary/20 blur-xl group-hover:bg-primary/30 transition-all" />
               </div>
               <span className="text-2xl font-display font-bold gradient-text">
-                FiGenie
+                ArthaAI
               </span>
             </motion.a>
 
 
             {/* CTA Button */}
             <div className="hidden md:block">
-              <Button size="md" onClick={() => router.push("/auth/login")}>Get Started</Button>
+              <Button size="md" onClick={() => router.push("/voice-assistant")}>Get Started</Button>
             </div>
 
             {/* Mobile CTA Button */}
             <div className="md:hidden">
-              <Button size="sm" onClick={() => router.push("/auth/login")}>Get Started</Button>
+              <Button size="sm" onClick={() => router.push("/voice-assistant")}>Get Started</Button>
             </div>
           </nav>
         </div>

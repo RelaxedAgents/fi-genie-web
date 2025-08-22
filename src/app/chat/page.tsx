@@ -34,7 +34,7 @@ export default function ChatPage() {
               <span>Back</span>
             </motion.button>
 
-            <h1 className="text-xl font-semibold text-white">FiGenie Assistant</h1>
+            <h1 className="text-xl font-semibold text-white">ArthaAI Assistant</h1>
 
             <div className="w-20" /> {/* Spacer for center alignment */}
           </div>

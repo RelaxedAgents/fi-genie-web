@@ -2,7 +2,7 @@
 
 import React from "react"
 import { motion } from "framer-motion"
-import { Brain } from "lucide-react"
+import Image from "next/image"
 import { ParticleBackground } from "@/components/effects/ParticleBackground"
 import { fadeInUp } from "@/lib/animations"
 
@@ -32,11 +32,17 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitl
         >
           <div className="flex items-center space-x-2">
             <div className="relative">
-              <Brain className="w-10 h-10 text-primary" />
+              <Image 
+                src="/arthaai-logo.png" 
+                alt="ArthaAI Logo" 
+                width={40} 
+                height={40} 
+                className="w-10 h-10"
+              />
               <div className="absolute inset-0 bg-primary/20 blur-xl" />
             </div>
             <span className="text-3xl font-display font-bold gradient-text">
-              FiGenie
+              ArthaAI
             </span>
           </div>
         </motion.div>

@@ -4,6 +4,7 @@ import React, { useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { motion } from "framer-motion"
+import Image from "next/image"
 import { ParticleBackground } from "@/components/effects/ParticleBackground"
 import { PageTransition } from "@/components/effects/PageTransition"
 import { LiquidGlassNavigation } from "@/components/dashboard/LiquidGlassNavigation"
@@ -50,13 +51,17 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                     whileTap={{ scale: 0.95 }}
                   >
                     <div className="relative">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                        <span className="text-white font-bold text-lg sm:text-xl">Fi</span>
-                      </div>
-                      <div className="absolute inset-0 rounded-xl bg-gradient-primary blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
+                      <Image 
+                        src="/arthaai-logo.png" 
+                        alt="ArthaAI Logo" 
+                        width={40} 
+                        height={40} 
+                        className="w-8 h-8 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform"
+                      />
+                      <div className="absolute inset-0 bg-primary/20 blur-xl group-hover:bg-primary/30 transition-all" />
                     </div>
                     <span className="text-lg sm:text-xl font-display font-bold gradient-text">
-                      FiGenie
+                      ArthaAI
                     </span>
                   </motion.div>
                 </Link>
