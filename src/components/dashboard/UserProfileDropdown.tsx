@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { User, Settings, LogOut, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { getCurrentUser, logout, getAvatarById } from "@/lib/auth"
+import { getCurrentUser, logout, getAvatarById, formatPhoneNumber } from "@/lib/auth"
 
 export const UserProfileDropdown: React.FC = () => {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const user = getCurrentUser()
-  const avatar = user ? getAvatarById(user.avatar || "") : null
+  const avatar = user && user.avatar ? getAvatarById(user.avatar) : null
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -27,7 +27,7 @@ export const UserProfileDropdown: React.FC = () => {
 
   const handleLogout = () => {
     logout()
-    router.push("/auth/login")
+    router.push("/")
   }
 
   const menuItems = [
@@ -37,9 +37,9 @@ export const UserProfileDropdown: React.FC = () => {
   ]
 
   // Show placeholder if no user
-  if (!user || !avatar) {
+  if (!user) {
     return (
-      <div className="flex items-center gap-3 px-4 py-2 rounded-full glass">
+      <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 rounded-full glass min-h-[44px]">
         <div className="w-8 h-8 rounded-full glass bg-gray-700 flex items-center justify-center">
           <User className="w-4 h-4 text-gray-400" />
         </div>
@@ -55,8 +55,9 @@ export const UserProfileDropdown: React.FC = () => {
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex items-center gap-3 px-4 py-2 rounded-full glass transition-all duration-300",
+          "flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 rounded-full glass transition-all duration-300",
           "hover:bg-white/[0.08] hover:shadow-lg",
+          "min-h-[44px] min-w-[44px]", // Ensure minimum touch target size for mobile
           isOpen && "bg-white/[0.1] shadow-lg"
         )}
         whileHover={{ scale: 1.02 }}
@@ -64,13 +65,21 @@ export const UserProfileDropdown: React.FC = () => {
       >
         {/* Avatar */}
         <div className="relative w-8 h-8 rounded-full overflow-hidden glass">
-          {avatar.emoji ? (
-            <span className="absolute inset-0 flex items-center justify-center text-lg">
-              {avatar.emoji}
-            </span>
-          ) : avatar.gradient ? (
-            <div className="w-full h-full" style={{ background: avatar.gradient }} />
-          ) : null}
+          {avatar ? (
+            <>
+              {avatar.emoji ? (
+                <span className="absolute inset-0 flex items-center justify-center text-lg">
+                  {avatar.emoji}
+                </span>
+              ) : avatar.gradient ? (
+                <div className="w-full h-full" style={{ background: avatar.gradient }} />
+              ) : null}
+            </>
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20">
+              <User className="w-4 h-4 text-white" />
+            </div>
+          )}
           
           {/* Online indicator */}
           <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-dark" />
@@ -84,7 +93,7 @@ export const UserProfileDropdown: React.FC = () => {
         {/* Chevron */}
         <ChevronDown
           className={cn(
-            "w-4 h-4 text-gray-400 transition-transform duration-300",
+            "w-4 h-4 text-gray-400 transition-transform duration-300 hidden sm:block",
             isOpen && "rotate-180"
           )}
         />
@@ -98,12 +107,17 @@ export const UserProfileDropdown: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute right-0 mt-2 w-56 glass rounded-xl shadow-xl overflow-hidden"
+            className={cn(
+              "absolute mt-2 glass rounded-xl shadow-xl overflow-hidden z-[60]",
+              "w-56 right-0",
+              "max-h-[calc(100vh-100px)]", // Prevent dropdown from going off-screen
+              "overflow-y-auto" // Allow scrolling if content is too long
+            )}
           >
             {/* User info header */}
             <div className="px-4 py-3 border-b border-white/[0.08]">
-              <p className="text-sm font-medium text-white">{user.username}</p>
-              <p className="text-xs text-gray-400">{user.phone}</p>
+              <p className="text-sm font-medium text-white">{user.username || `User ${user.phone.slice(-4)}`}</p>
+              <p className="text-xs text-gray-400">{formatPhoneNumber(user.phone)}</p>
             </div>
 
             {/* Menu items */}
@@ -117,8 +131,14 @@ export const UserProfileDropdown: React.FC = () => {
                       setIsOpen(false)
                       item.onClick()
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/[0.08] transition-all duration-200"
+                    className={cn(
+                      "w-full flex items-center gap-3 px-4 py-3 sm:py-2.5",
+                      "text-sm text-gray-300 hover:text-white",
+                      "hover:bg-white/[0.08] active:bg-white/[0.12]",
+                      "transition-all duration-200"
+                    )}
                     whileHover={{ x: 4 }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     <Icon className="w-4 h-4" />
                     <span>{item.label}</span>

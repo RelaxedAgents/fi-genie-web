@@ -7,7 +7,7 @@ import { AuthenticatedHeader } from "@/components/layout/AuthenticatedHeader"
 import { createSession } from "@/config/mockPhoneNumbers"
 import { saveUser } from "@/lib/auth"
 import { fetchDashboardData } from "@/lib/api/dashboardApi"
-import { saveDashboardData, setApiStatus } from "@/lib/dashboardData"
+import { saveDashboardData, setApiStatus, clearDashboardData, clearApiStatus } from "@/lib/dashboardData"
 
 export default function VoiceAssistantPage() {
   const router = useRouter()
@@ -19,11 +19,15 @@ export default function VoiceAssistantPage() {
     // Save the mock phone number as authenticated user
     saveUser(session.phoneNumber)
     
+    // Clear any existing dashboard data for a fresh start
+    clearDashboardData()
+    clearApiStatus()
+    
     // Start fetching dashboard data in the background
     setApiStatus('loading')
     fetchDashboardData(session.phoneNumber)
       .then((data) => {
-        saveDashboardData(data)
+        saveDashboardData(data, session.phoneNumber)
         setApiStatus('success')
       })
       .catch((error) => {

@@ -11,14 +11,16 @@ export type ApiStatus = 'idle' | 'loading' | 'success' | 'error';
 interface StoredDashboardData {
   data: DashboardApiResponse;
   timestamp: number;
+  phoneNumber: string;
 }
 
 // Save dashboard data to localStorage
-export function saveDashboardData(data: DashboardApiResponse): void {
+export function saveDashboardData(data: DashboardApiResponse, phoneNumber: string): void {
   try {
     const storedData: StoredDashboardData = {
       data,
       timestamp: Date.now(),
+      phoneNumber,
     };
     localStorage.setItem(DASHBOARD_DATA_KEY, JSON.stringify(storedData));
   } catch (error) {
@@ -27,7 +29,7 @@ export function saveDashboardData(data: DashboardApiResponse): void {
 }
 
 // Get dashboard data from localStorage
-export function getDashboardData(): DashboardApiResponse | null {
+export function getDashboardData(phoneNumber?: string): DashboardApiResponse | null {
   try {
     const stored = localStorage.getItem(DASHBOARD_DATA_KEY);
     if (!stored) return null;
@@ -37,6 +39,11 @@ export function getDashboardData(): DashboardApiResponse | null {
     // Check if data is expired
     if (!isDashboardDataValid(storedData.timestamp)) {
       clearDashboardData();
+      return null;
+    }
+
+    // Check if phone number matches (if provided)
+    if (phoneNumber && storedData.phoneNumber !== phoneNumber) {
       return null;
     }
 

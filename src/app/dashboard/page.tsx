@@ -1,7 +1,13 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout"
+import { getCurrentUser } from "@/lib/auth"
+import { createSession } from "@/config/mockPhoneNumbers"
+import { saveUser } from "@/lib/auth"
+import { fetchDashboardData } from "@/lib/api/dashboardApi"
+import { saveDashboardData, setApiStatus, getDashboardData } from "@/lib/dashboardData"
 import { FinancialHealthScore } from "@/components/dashboard/FinancialHealthScore"
 import { CreditShield } from "@/components/dashboard/CreditShield"
 import { CashFlowRiver } from "@/components/dashboard/CashFlowRiver"
@@ -13,8 +19,41 @@ import { useDashboardData } from "@/hooks/useDashboardData"
 import { MobileDashboardTabs } from "@/components/dashboard/MobileDashboardTabs"
 
 export default function DashboardPage() {
+  const router = useRouter()
   const { data, isLoading } = useDashboardData()
   const [selectedInsight, setSelectedInsight] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Check if user exists, if not create a mock session
+    const user = getCurrentUser()
+    if (!user) {
+      // Create a new session with mock phone number
+      const session = createSession()
+      
+      // Save the mock phone number as authenticated user
+      saveUser(session.phoneNumber)
+      
+      // Reload to ensure data is fetched with the new session
+      router.refresh()
+    } else {
+      // Check if we have valid cached data for this user
+      const cachedData = getDashboardData(user.phone)
+      if (!cachedData) {
+        // No valid cached data, fetch fresh data
+        setApiStatus('loading')
+        fetchDashboardData(user.phone)
+          .then((data) => {
+            saveDashboardData(data, user.phone)
+            setApiStatus('success')
+            router.refresh()
+          })
+          .catch((error) => {
+            console.error('Failed to fetch dashboard data:', error)
+            setApiStatus('error')
+          })
+      }
+    }
+  }, [router])
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },

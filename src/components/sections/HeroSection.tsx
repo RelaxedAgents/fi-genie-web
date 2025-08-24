@@ -6,11 +6,25 @@ import { ArrowRight, Sparkles } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/common/Button"
 import { fadeInUp, floatingAnimation } from "@/lib/animations"
+import { createSession } from "@/config/mockPhoneNumbers"
+import { saveUser } from "@/lib/auth"
+import { clearDashboardData, clearApiStatus } from "@/lib/dashboardData"
 
 export const HeroSection: React.FC = () => {
   const router = useRouter()
 
   const handleGetStarted = () => {
+    // Clear any existing dashboard data for a fresh start
+    clearDashboardData()
+    clearApiStatus()
+    
+    // Create a new session with mock phone number
+    const session = createSession()
+    
+    // Save the mock phone number as authenticated user
+    saveUser(session.phoneNumber)
+    
+    // Navigate to voice assistant
     router.push("/voice-assistant")
   }
 
