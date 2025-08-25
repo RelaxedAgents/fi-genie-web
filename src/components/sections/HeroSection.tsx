@@ -24,8 +24,8 @@ export const HeroSection: React.FC = () => {
     // Save the mock phone number as authenticated user
     saveUser(session.phoneNumber)
     
-    // Navigate to voice assistant
-    router.push("/voice-assistant")
+    // Navigate to dashboard
+    router.push("/dashboard")
   }
 
   return (
